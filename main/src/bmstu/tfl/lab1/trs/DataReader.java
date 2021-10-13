@@ -1,9 +1,11 @@
 package bmstu.tfl.lab1.trs;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -16,23 +18,24 @@ public class DataReader {
     }
 
     public void readFromFile(String path) throws Error, IOException {
-        String filename;
-        try {
-            filename = Objects.requireNonNull(getClass().getClassLoader().getResource(path)).getFile();
-        } catch (NullPointerException ignored) {
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream(path);
+        if (inputStream == null) {
             throw new Error("File wasn't found");
         }
+        InputStreamReader streamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+        BufferedReader reader = new BufferedReader(streamReader);
 
-        File file = new File(filename);
+        String line;
+        ArrayList<String> dataCandidate = new ArrayList<>();
+        while((line = reader.readLine()) != null) {
+            dataCandidate.add(line);
+        }
 
-        String input = new String(Files.readAllBytes(file.toPath()));
-        final String separator = "\n";
-        String[] dataCandidate = input.split(separator);
-        Stream<String> streamFromData = Arrays.stream(dataCandidate);
-        dataCandidate = streamFromData.filter(s -> s.length() != 0).toArray(String[]::new);
+        Stream<String> streamFromData = dataCandidate.stream();
+        String[] data = streamFromData.filter(s -> s.length() != 0).toArray(String[]::new);
 
-        if (dataCandidate.length == 4) {
-            set(dataCandidate);
+        if (data.length == 4) {
+            set(data);
         } else {
             throw new Error("Invalid input data");
         }
