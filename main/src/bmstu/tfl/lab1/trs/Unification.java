@@ -40,7 +40,7 @@ public class Unification {
     }
 
 
-    public static Pair<Boolean, Integer> checkExistenceOfConstructor(char name) throws Error {
+    protected static Pair<Boolean, Integer> checkExistenceOfConstructor(char name) throws Error {
         for (Constructor c: constructors) {
             if (c.getName() == name) {
                 return new Pair<>(Boolean.TRUE, c.getArgumentsAmount());
@@ -49,7 +49,7 @@ public class Unification {
         return new Pair<>(Boolean.FALSE, 0);
     }
 
-    public static boolean checkExistenceOfVariable(String name) throws Error {
+    protected static boolean checkExistenceOfVariable(String name) throws Error {
         for (String s: variables) {
             if (s.equals(name)) {
                 return true;

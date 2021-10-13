@@ -37,7 +37,7 @@ public class Term {
             name = term.charAt(0);
             type = TermType.VARIABLE;
         } else {
-            throw new Error("No declared constructors or variables found");
+            throw new Error("No declared constructors or variables found: " + term);
         }
     }
 

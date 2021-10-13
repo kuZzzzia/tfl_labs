@@ -5,7 +5,7 @@ public class Constructor {
     private final char name;
     private final int argumentsAmount;
 
-    protected Constructor(String input) throws Error {
+    public Constructor(String input) throws Error {
         name = parseName(input);
         argumentsAmount = parseArgumentsAmount(input);
     }
