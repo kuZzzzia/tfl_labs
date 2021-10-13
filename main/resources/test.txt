@@ -1,6 +1,6 @@
-constructors = g(1), A(0), f(2)
-variables = x, y, z, w, v
-first = f(w, g(A))
-second = f(f(y, x), g(A))
+constructors = A(0), B(0), C(3), e(1)
+variables = x, y, z
+first = C(A, y, C(x, e(z), B))
+second = C(x, B, C(x, z, B))
 
 

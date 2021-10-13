@@ -70,6 +70,8 @@ public class Term {
             }
             if (argument.length() == 0) {
                 throw new Error("Empty argument: " + term);
+            } else if (balancingBracket != 0) {
+                throw new Error("Invalid sequence of brackets in term: " + term);
             } else {
                 args[count++] = argument.toString().trim();
             }
@@ -95,13 +97,15 @@ public class Term {
 
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder(String.valueOf(getName()));
-        stringBuilder.append('(');
-        for (Term t: getArguments()) {
-            stringBuilder.append(t.toString());
-            stringBuilder.append(", ");
+        if (getType() == TermType.CONSTRUCTOR) {
+            stringBuilder.append('(');
+            for (Term t : getArguments()) {
+                stringBuilder.append(t.toString());
+                stringBuilder.append(", ");
+            }
+            stringBuilder.setLength(stringBuilder.length() - 2);
+            stringBuilder.append(')');
         }
-        stringBuilder.setLength(stringBuilder.length() - 2);
-        stringBuilder.append(')');
         return stringBuilder.toString();
     }
 
