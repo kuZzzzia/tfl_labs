@@ -12,7 +12,7 @@ public class Unification {
 
     public static void main(String[] args) {
         if (args.length == 0) {
-            System.out.println("Usage: java -cp ./main/src bmstu.tfl.lab1.trs.Unification path/to/test");
+            System.out.println("Usage: java -jar ./target/tfl_lab_1-1.0-SNAPSHOT.jar path/to/test/from/resources");
         } else {
             try {
                 DataReader data = new DataReader(args[0]);
