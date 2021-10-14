@@ -1,10 +1,7 @@
 package bmstu.tfl.lab1.trs;
 
-import javafx.util.Pair;
-
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class Unification {
     private static Constructor[] constructors;
@@ -12,15 +9,16 @@ public class Unification {
 
     public static void main(String[] args) {
         if (args.length == 0) {
-            System.out.println("Usage: java -jar ./target/tfl_lab_1-1.0-SNAPSHOT.jar path/to/test/from/resources");
+            System.out.println("Usage: java -jar ./target/tfl_lab_1_trs-1.0-SNAPSHOT.jar path/to/test/from/resources");
         } else {
             try {
-                DataReader data = new DataReader(args[0]);
+                TRSReader data = new TRSReader(args[0]);
                 setConstructors(data.getConstructors());
                 setVariables(data.getVariables());
                 Term firstTerm = new Term(data.getFirstTerm());
                 Term secondTerm = new Term(data.getSecondTerm());
-                printUnification(unify(firstTerm, secondTerm));
+                ArrayList<String> firstTermSubstitutions = new ArrayList<>(), secondTermSubstitutions = new ArrayList<>();
+                printUnification(unify(firstTerm, secondTerm, firstTermSubstitutions, secondTermSubstitutions), firstTermSubstitutions, secondTermSubstitutions);
             } catch (Error | IOException e) {
                 System.out.println(e.getMessage());
             }
@@ -40,16 +38,16 @@ public class Unification {
     }
 
 
-    protected static Pair<Boolean, Integer> checkExistenceOfConstructor(char name) throws Error {
+    protected static Constructor checkExistenceOfConstructor(char name) {
         for (Constructor c: constructors) {
             if (c.getName() == name) {
-                return new Pair<>(Boolean.TRUE, c.getArgumentsAmount());
+                return c;
             }
         }
-        return new Pair<>(Boolean.FALSE, 0);
+        return null;
     }
 
-    protected static boolean checkExistenceOfVariable(String name) throws Error {
+    protected static boolean checkExistenceOfVariable(String name) {
         for (String s: variables) {
             if (s.equals(name)) {
                 return true;
@@ -58,54 +56,53 @@ public class Unification {
         return false;
     }
 
-    private static Pair<String, String[]> unify(Term firstTerm, Term secondTerm) throws Error {
+    private static String unify(Term firstTerm, Term secondTerm, ArrayList<String> firstTermSubstitutions, ArrayList<String> secondTermSubstitutions) throws Error {
         if (firstTerm.getType() == TermType.VARIABLE) {
             if (secondTerm.getType() == TermType.VARIABLE) {
                 if (secondTerm.getName() != firstTerm.getName()) {
-                    return new Pair<>(firstTerm.toString(), new String[]{firstTerm + " = " + secondTerm});
+                    secondTermSubstitutions.add(secondTerm + " = " + firstTerm);
                 }
-                return new Pair<>(firstTerm.toString(), null);
+                return firstTerm.toString();
             }
-            return new Pair<>(secondTerm.toString(), new String[]{firstTerm + " = " + secondTerm});
+            firstTermSubstitutions.add(firstTerm + " = " + secondTerm);
+            return secondTerm.toString();
         } else if (secondTerm.getType() == TermType.VARIABLE) {
-            return new Pair<>(firstTerm.toString(), new String[]{secondTerm + " = " + firstTerm});
+            secondTermSubstitutions.add(secondTerm + " = " + firstTerm);
+            return firstTerm.toString();
         } else if (firstTerm.getName() == secondTerm.getName()) {
             if (firstTerm.getType() == TermType.CONSTANT) {
-                return new Pair<>(firstTerm.toString(), null);
+                return firstTerm.toString();
             } else {
                 Term[] firstTermArguments = firstTerm.getArguments(), secondTermArguments = secondTerm.getArguments();
                 StringBuilder unification = new StringBuilder(String.valueOf(firstTerm.getName()));
-                ArrayList<String> substitutions = new ArrayList<>();
                 unification.append('(');
                 for (int i = 0; i < firstTermArguments.length; i++) {
-                    Pair<String, String[]> unificator = unify(firstTermArguments[i], secondTermArguments[i]);
-                    unification.append(unificator.getKey());
+                    unification.append(unify(firstTermArguments[i], secondTermArguments[i], firstTermSubstitutions, secondTermSubstitutions));
                     if (i != firstTermArguments.length - 1) {
                         unification.append(", ");
                     }
-                    if (unificator.getValue() != null) {
-                        substitutions.addAll(Arrays.asList(unificator.getValue()));
-                    }
                 }
                 unification.append(')');
-                String[] subst = new String[substitutions.size()];
-                for (int i = 0; i < substitutions.size(); i++)
-                    subst[i] = substitutions.get(i);
-                return new Pair<>(unification.toString(), subst);
+                return unification.toString();
             }
         } else {
             throw new Error("Unification is not possible");
         }
     }
 
-    private static void printUnification(Pair<String, String[]> answer) {
-        if (answer.getValue() != null) {
-            System.out.println("Substitutions");
-            for (String s: answer.getValue()) {
-                System.out.println(s);
+    private static void printUnification(String answer, ArrayList<String> firstTermSubstitutions, ArrayList<String> secondTermSubstitutions) {
+        printTermSubstitutions(firstTermSubstitutions, 1);
+        printTermSubstitutions(secondTermSubstitutions, 2);
+        System.out.println("Unification:");
+        System.out.println("\t" + answer);
+    }
+
+    private static void printTermSubstitutions(ArrayList<String> termSubstitutions, int sequentialNumber) {
+        if (termSubstitutions.size() != 0) {
+            System.out.println("Substitutions for " + sequentialNumber + " term:");
+            for (String s: termSubstitutions) {
+                System.out.println("\t" + s);
             }
         }
-        System.out.println("Unification");
-        System.out.println(answer.getKey());
     }
 }

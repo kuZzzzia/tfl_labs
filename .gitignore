@@ -24,6 +24,11 @@ hs_err_pid*
 
 #idea files
 .idea
+*.iml
 
 #maven
 trs/target
+srs/target
+reader/target
+trs/dependency-reduced-pom.xml
+srs/dependency-reduced-pom.xml

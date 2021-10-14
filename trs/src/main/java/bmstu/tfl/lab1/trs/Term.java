@@ -1,7 +1,5 @@
 package bmstu.tfl.lab1.trs;
 
-import javafx.util.Pair;
-
 enum TermType {
     CONSTRUCTOR,
     CONSTANT,
@@ -14,21 +12,22 @@ public class Term {
     private final TermType type;
 
     public Term(String term) throws Error {
+        arguments = null;
         if (term.length() == 0) {
             throw new Error("Empty term");
         }
-        Pair<Boolean, Integer> args = Unification.checkExistenceOfConstructor(term.charAt(0));
-        if (args.getKey()) {
+        Constructor constructor = Unification.checkExistenceOfConstructor(term.charAt(0));
+        if (constructor != null) {
             name = term.charAt(0);
-            if (args.getValue() == 0) {
+            if (constructor.getArgumentsAmount() == 0) {
                 type = TermType.CONSTANT;
                 if (term.length() != 1) {
                     throw new Error("Invalid constructor usage" + term);
                 }
             } else {
                 type = TermType.CONSTRUCTOR;
-                String[] argsCandidates = getTermArguments(term, args.getValue());
-                arguments = new Term[args.getValue()];
+                String[] argsCandidates = getTermArguments(term, constructor.getArgumentsAmount());
+                arguments = new Term[constructor.getArgumentsAmount()];
                 for (int i = 0; i < argsCandidates.length; i++) {
                     arguments[i] = new Term(argsCandidates[i]);
                 }
