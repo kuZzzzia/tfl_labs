@@ -1,5 +1,7 @@
 package bmstu.tfl.lab1.trs;
 
+import java.util.ArrayList;
+
 enum TermType {
     CONSTRUCTOR,
     CONSTANT,
@@ -22,7 +24,7 @@ public class Term {
             if (constructor.getArgumentsAmount() == 0) {
                 type = TermType.CONSTANT;
                 if (term.length() != 1) {
-                    throw new Error("Invalid constructor usage" + term);
+                    throw new Error("Invalid constructor: " + term);
                 }
             } else {
                 type = TermType.CONSTRUCTOR;
@@ -35,14 +37,16 @@ public class Term {
         } else if (Unification.checkExistenceOfVariable(String.valueOf(term.charAt(0)))) {
             name = term.charAt(0);
             type = TermType.VARIABLE;
+            if (term.length() != 1) {
+                throw new Error("Invalid variable: " + term);
+            }
         } else {
             throw new Error("No declared constructors or variables found: " + term);
         }
     }
 
     private String[] getTermArguments(String term, int amountOfArguments) {
-        String[] args = new String[amountOfArguments];
-        int count = 0;
+        ArrayList<String> argsList = new ArrayList<>();
         if (term.indexOf('(') == 1 && term.lastIndexOf(')') == term.length() - 1) {
             StringBuilder argument = new StringBuilder();
             int balancingBracket = 0;
@@ -52,7 +56,7 @@ public class Term {
                         if (argument.length() == 0) {
                             throw new Error("Empty argument: " + term);
                         } else {
-                            args[count++] = argument.toString().trim();
+                            argsList.add(argument.toString().trim());
                             argument.setLength(0);
                         }
                     } else {
@@ -72,12 +76,12 @@ public class Term {
             } else if (balancingBracket != 0) {
                 throw new Error("Invalid sequence of brackets in term: " + term);
             } else {
-                args[count++] = argument.toString().trim();
+                argsList.add(argument.toString().trim());
             }
-            if (count != amountOfArguments) {
+            if (argsList.size() != amountOfArguments) {
                 throw new Error("Invalid amount of constructor arguments: " + term);
             }
-            return args;
+            return argsList.toArray(new String[0]);
         }
         throw new Error("Invalid constructor usage: " + term);
     }
@@ -98,11 +102,13 @@ public class Term {
         StringBuilder stringBuilder = new StringBuilder(String.valueOf(getName()));
         if (getType() == TermType.CONSTRUCTOR) {
             stringBuilder.append('(');
-            for (Term t : getArguments()) {
-                stringBuilder.append(t.toString());
-                stringBuilder.append(", ");
+            if (getArguments() != null) {
+                for (Term t : getArguments()) {
+                    stringBuilder.append(t.toString());
+                    stringBuilder.append(", ");
+                }
+                stringBuilder.setLength(stringBuilder.length() - 2);
             }
-            stringBuilder.setLength(stringBuilder.length() - 2);
             stringBuilder.append(')');
         }
         return stringBuilder.toString();

@@ -11,12 +11,13 @@ public class SRSReader extends Reader {
 
     public SRSReader(String path) throws Error, IOException {
         super(path);
-        fillLeftSidesOfRules();
+        selectAndSetLeftSidesOfRules();
     }
 
-    private void fillLeftSidesOfRules() {
+    private void selectAndSetLeftSidesOfRules() {
         Stream<String> streamFromRules = Arrays.stream(super.getData());
-        String[] leftSidesOfRules = streamFromRules.map(s -> s.substring(0, s.indexOf("->"))).toArray(String[]::new);
+        String[] leftSidesOfRules = streamFromRules.map(s -> s.substring(0, s.indexOf("->")).trim()).toArray(String[]::new);
+        this.leftSidesOfRules = new String[leftSidesOfRules.length];
         System.arraycopy(leftSidesOfRules, 0, this.leftSidesOfRules, 0, leftSidesOfRules.length);
     }
 

@@ -7,6 +7,9 @@ public class Unification {
     private static Constructor[] constructors;
     private static String[] variables;
 
+    public static final String ANSI_RESET = "\u001B[0m";
+    public static final String ANSI_GREEN = "\u001B[32m";
+
     public static void main(String[] args) {
         if (args.length == 0) {
             System.out.println("Usage: java -jar ./target/tfl_lab_1_trs-1.0-SNAPSHOT.jar path/to/test/from/resources");
@@ -18,7 +21,7 @@ public class Unification {
                 Term firstTerm = new Term(data.getFirstTerm());
                 Term secondTerm = new Term(data.getSecondTerm());
                 ArrayList<String> firstTermSubstitutions = new ArrayList<>(), secondTermSubstitutions = new ArrayList<>();
-                printUnification(unify(firstTerm, secondTerm, firstTermSubstitutions, secondTermSubstitutions), firstTermSubstitutions, secondTermSubstitutions);
+                printUnification(unify(firstTerm, secondTerm, firstTermSubstitutions, secondTermSubstitutions), firstTerm, secondTerm, firstTermSubstitutions, secondTermSubstitutions);
             } catch (Error | IOException e) {
                 System.out.println(e.getMessage());
             }
@@ -90,16 +93,16 @@ public class Unification {
         }
     }
 
-    private static void printUnification(String answer, ArrayList<String> firstTermSubstitutions, ArrayList<String> secondTermSubstitutions) {
-        printTermSubstitutions(firstTermSubstitutions, 1);
-        printTermSubstitutions(secondTermSubstitutions, 2);
+    private static void printUnification(String answer, Term firstTerm, Term secondTerm, ArrayList<String> firstTermSubstitutions, ArrayList<String> secondTermSubstitutions) {
+        printTermSubstitutions(firstTerm, firstTermSubstitutions);
+        printTermSubstitutions(secondTerm, secondTermSubstitutions);
         System.out.println("Unification:");
         System.out.println("\t" + answer);
     }
 
-    private static void printTermSubstitutions(ArrayList<String> termSubstitutions, int sequentialNumber) {
+    private static void printTermSubstitutions(Term term, ArrayList<String> termSubstitutions) {
         if (termSubstitutions.size() != 0) {
-            System.out.println("Substitutions for " + sequentialNumber + " term:");
+            System.out.println("Substitutions for " + ANSI_GREEN + term.toString() + ANSI_RESET + " term:");
             for (String s: termSubstitutions) {
                 System.out.println("\t" + s);
             }

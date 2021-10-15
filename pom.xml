@@ -16,6 +16,7 @@
 
     <modules>
         <module>trs</module>
+        <module>srs</module>
         <module>reader</module>
     </modules>
 </project>

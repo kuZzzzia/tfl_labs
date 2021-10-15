@@ -15,7 +15,7 @@ public class TRSReader extends Reader {
     }
 
     private String[] getItems(int i) {
-        Stream<String> constructorsCandidates = Stream.of(getData()[i].substring(getData()[i].indexOf('=') + 1).trim().split(","));
+        Stream<String> constructorsCandidates = Stream.of(getData(i).substring(getData(i).indexOf('=') + 1).trim().split(","));
         return constructorsCandidates.map(String::trim).filter(s -> s.length() != 0).toArray(String[]::new);
     }
 
@@ -26,7 +26,7 @@ public class TRSReader extends Reader {
     public String[] getVariables() throws Error {
         String[] variables = getItems(1);
         for (String s: variables) {
-            if (s.length() != 1) {
+            if (s.length() != 1 || !((s.charAt(0) >= 'a' && s.charAt(0) <= 'z') || (s.charAt(0) >= 'A' && s.charAt(0) <= 'Z'))) {
                 throw new Error("Invalid variable declaration: " + s);
             }
         }
