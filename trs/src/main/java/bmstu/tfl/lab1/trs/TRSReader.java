@@ -26,7 +26,8 @@ public class TRSReader extends Reader {
     public String[] getVariables() throws Error {
         String[] variables = getItems(1);
         for (String s: variables) {
-            if (s.length() != 1 || !((s.charAt(0) >= 'a' && s.charAt(0) <= 'z') || (s.charAt(0) >= 'A' && s.charAt(0) <= 'Z'))) {
+            final String pattern = "[a-zA-Z]";
+            if (!s.matches(pattern)) {
                 throw new Error("Invalid variable declaration: " + s);
             }
         }

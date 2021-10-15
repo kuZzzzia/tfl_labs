@@ -39,7 +39,7 @@ public class Confluence {
                 }
             }
         }
-        System.out.println("System is confluent");
+        System.out.println("System is probably confluent");
     }
 
     public static boolean checkConfluence(String rule) {
@@ -93,12 +93,12 @@ public class Confluence {
     }
 
     public static void printResult(int i, SRSReader data) {
-        System.out.println("System is probably not confluent");
+        System.out.println("System is not confluent");
         System.out.println("Rule number " + i + ": " + ANSI_GREEN + data.getData(i) + ANSI_RESET + " has equal prefix and suffix");
     }
 
     public static void printResult(int i,int j, SRSReader data) {
-        System.out.println("System is probably not confluent");
+        System.out.println("System is not confluent");
         System.out.println("Rule number " + i + ": " + ANSI_GREEN + data.getData(i) + ANSI_RESET + " has prefix equal to suffix of rule number " + j + ": " + ANSI_GREEN + data.getData(j) + ANSI_RESET);
     }
 

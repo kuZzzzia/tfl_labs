@@ -15,10 +15,23 @@ public class SRSReader extends Reader {
     }
 
     private void selectAndSetLeftSidesOfRules() {
-        Stream<String> streamFromRules = Arrays.stream(super.getData());
+        if (!checkData(getData())) {
+            throw new Error("Invalid input");
+        }
+        Stream<String> streamFromRules = Arrays.stream(getData());
         String[] leftSidesOfRules = streamFromRules.map(s -> s.substring(0, s.indexOf("->")).trim()).toArray(String[]::new);
         this.leftSidesOfRules = new String[leftSidesOfRules.length];
         System.arraycopy(leftSidesOfRules, 0, this.leftSidesOfRules, 0, leftSidesOfRules.length);
+    }
+
+    private boolean checkData(String[] data) {
+        final String pattern = "\\s*[a-zA-Z]+\\s*->\\s*[a-zA-Z]*\\s*";
+        for (String line: data) {
+            if (!line.matches(pattern)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public String[] getLeftSideOfRules() {

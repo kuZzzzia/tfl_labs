@@ -6,30 +6,18 @@ public class Constructor {
     private final int argumentsAmount;
 
     public Constructor(String input) throws Error {
-        name = parseName(input);
-        argumentsAmount = parseArgumentsAmount(input);
-    }
-
-    private static char parseName(String input) throws Error {
-        final int nameEndingIndex = input.indexOf('(');
-        if (nameEndingIndex != 1) {
+        final String pattern = "[a-zA-z]\\(\\d*\\)";
+        if (!input.matches(pattern)) {
             throw new Error("Invalid constructor declaration: " + input);
         }
-        char nameCandidate = input.charAt(0);
-        if (!((nameCandidate >= 'a' && nameCandidate <= 'z') || (nameCandidate >= 'A' && nameCandidate <= 'Z'))) {
-            throw new Error("Invalid constructor name: " + input);
-        }
-        return nameCandidate;
+        name = input.charAt(0);
+        argumentsAmount = parseArgumentsAmount(input.substring(2, input.length() - 1));
     }
 
     private static int parseArgumentsAmount(String input) throws Error {
-        final int argumentsAmountStartingIndex = input.indexOf('(') + 1;
-        if (input.indexOf(')') != input.length() - 1) {
-            throw new Error("Invalid constructor declaration: " + input);
-        }
         int argumentsAmountCandidate;
         try {
-            argumentsAmountCandidate = Integer.parseInt(input.substring(argumentsAmountStartingIndex, input.length() - 1));
+            argumentsAmountCandidate = Integer.parseInt(input);
         } catch (NumberFormatException ignored) {
             throw new Error("Constructor must have the amount of arguments in brackets: " + input);
         }
