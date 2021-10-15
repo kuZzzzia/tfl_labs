@@ -12,7 +12,7 @@ public class Unification {
 
     public static void main(String[] args) {
         if (args.length == 0) {
-            System.out.println("Usage: java -jar ./target/tfl_lab_1_trs-1.0-SNAPSHOT.jar path/to/test/from/resources");
+            System.out.println("Usage: java -jar ./trs/target/trs-1.0-SNAPSHOT.jar path/to/test/from/resources");
         } else {
             try {
                 TRSReader data = new TRSReader(args[0]);

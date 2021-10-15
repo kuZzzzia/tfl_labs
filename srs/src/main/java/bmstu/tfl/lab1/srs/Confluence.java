@@ -8,7 +8,7 @@ public class Confluence {
 
     public static void main(String[] args) {
         if (args.length == 0) {
-            System.out.println("Usage: java -jar ./target/tfl_lab_1_srs-1.0-SNAPSHOT.jar path/to/test/from/resources");
+            System.out.println("Usage: java -jar ./srs/target/srs-1.0-SNAPSHOT.jar path/to/test/from/resources");
         } else {
             try {
                 SRSReader data = new SRSReader(args[0]);
