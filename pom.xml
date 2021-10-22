@@ -18,6 +18,7 @@
         <module>reader</module>
         <module>equivalent_regular_expressions</module>
         <module>solving_systems_of_regular_expression_equations</module>
+        <module>grammar_to_regex_convertion</module>
     </modules>
     
 </project>
