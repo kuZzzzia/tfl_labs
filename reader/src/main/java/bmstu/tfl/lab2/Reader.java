@@ -24,7 +24,7 @@ public class Reader {
         String line;
         ArrayList<String> dataCandidate = new ArrayList<>();
         while((line = reader.readLine()) != null) {
-            dataCandidate.add(line);
+            dataCandidate.add(line.trim());
         }
 
         Stream<String> streamFromData = dataCandidate.stream();
