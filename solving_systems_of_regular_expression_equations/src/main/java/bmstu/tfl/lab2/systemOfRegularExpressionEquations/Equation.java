@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Equation {
-    private static final String VARIABLE_REGEX = "^[A-Z]$";
+    protected static final String ERROR_MESSAGE = "Invalid equation declaration: ";
+
     protected static HashMap<Character, Boolean> usedVariables = new HashMap<>();
     private static final HashMap<Character, Boolean> leftSideVariables = new HashMap<>();
 
@@ -14,29 +15,37 @@ public class Equation {
 
     public Equation(String equation) throws Error {
         this.variables = new HashMap<>();
-        Parser parser = new Parser(equation);
-        int i = setVar(equation, parser);
+        RegexEquationParser parser = new RegexEquationParser(equation);
+        int i = 0;
+        i = parser.parseCapitalLetter(i, ERROR_MESSAGE);
+        setVar(equation.charAt(0));
         checkVariableNotExists();
-        i = parser.presenceCharacter('=', i);
+        i = parser.presenceCharacter('=', i, ERROR_MESSAGE);
         int lastPlusCharacterIndex = equation.lastIndexOf('+');
         String regex;
         if (lastPlusCharacterIndex == -1) {
-            int j = parser.parseRegex(i);
+            int j = parser.parseRegex(i, ERROR_MESSAGE);
             if (j != equation.length()) {
-                throwInvalidEquationError(equation);
+                throw new Error(ERROR_MESSAGE + equation);
             }
             regex = equation.substring(i, j);
         } else {
-            lastPlusCharacterIndex = parser.skipWhitespaces(lastPlusCharacterIndex + 1);
-            int end = parser.parseRegex(lastPlusCharacterIndex);
+            lastPlusCharacterIndex = parser.skipWhitespaces(lastPlusCharacterIndex + 1, ERROR_MESSAGE);
+            int end = parser.parseRegex(lastPlusCharacterIndex, ERROR_MESSAGE);
             if (end != equation.length()) {
-                throwInvalidEquationError(equation);
+                throw new Error(ERROR_MESSAGE + equation);
             }
             regex = equation.substring(lastPlusCharacterIndex, end);
-            parser.parseCoefficients(variables, i, lastPlusCharacterIndex);
+            parser.parseCoefficients(variables, i, lastPlusCharacterIndex, ERROR_MESSAGE);
         }
         this.regex = new ArrayList<>();
         this.regex.add(regex);
+    }
+
+    public Equation(char var, HashMap<Character, ArrayList<String>> variables, ArrayList<String> regex) {
+        this.var = var;
+        this.variables = variables;
+        this.regex = regex;
     }
 
     private void checkVariableNotExists() {
@@ -55,7 +64,7 @@ public class Equation {
         }
     }
 
-    protected void reduceVariableFromRightSide() {
+    protected void reduceVariableFromRightSide(boolean associativity) {
         char varName = this.getVar();
         ArrayList<String> coefficients = variables.get(varName);
         if (coefficients != null) {
@@ -63,14 +72,32 @@ public class Equation {
             variables.remove(varName);
             for (ArrayList<String> var : variables.values()) {
                 String variableCoefficient = makeCoefficient(var);
-                variableCoefficient = concatRegexes(coefficient, variableCoefficient);
+                if (associativity) {
+                    variableCoefficient = concatRegexes(coefficient, variableCoefficient);
+                } else {
+                    variableCoefficient = concatRegexes(variableCoefficient, coefficient);
+                }
                 var.clear();
                 var.add(variableCoefficient);
             }
             String regex = getRegex();
-            regex = concatRegexes(coefficient, regex);
+            if (associativity) {
+                regex = concatRegexes(coefficient, regex);
+            } else {
+                regex = concatRegexes(regex, coefficient);
+            }
             setRegex(regex);
         }
+    }
+
+
+    protected static String concatRegexes(String prefix, String suffix) {
+        if (prefix.length() == 1 || (prefix.charAt(0) == '(' && prefix.charAt(prefix.length() - 1) == ')')) {
+            suffix = prefix + "*" + suffix;
+        } else {
+            suffix = "(" + prefix + ")*" + suffix;
+        }
+        return suffix;
     }
 
     private static String makeCoefficient(ArrayList<String> coefficients) {
@@ -78,15 +105,6 @@ public class Equation {
             return coefficients.get(0);
         }
         return "(" + String.join("+", coefficients) + ")";
-    }
-
-    private static String concatRegexes(String prefix, String suffix) {
-        if (prefix.length() == 1 || (prefix.charAt(0) == '(' && prefix.charAt(prefix.length() - 1) == ')')) {
-            suffix = prefix + "*" + suffix;
-        } else {
-            suffix = "(" + prefix + ")*" + suffix;
-        }
-        return suffix;
     }
 
     public void substituteVariableInEquation(Equation equation) {
@@ -111,14 +129,8 @@ public class Equation {
         }
     }
 
-    private int setVar(final String equation, Parser parser) throws Error {
-        int i = 0;
-        String varString = equation.substring(i, i + 1);
-        if (!varString.matches(VARIABLE_REGEX)) {
-            throw new Error("Invalid variable declaration: " + varString);
-        }
-        this.var = varString.charAt(i++);
-        return parser.skipWhitespaces(i);
+    private void setVar(char var) {
+        this.var = var;
     }
 
     protected void setRegex(String regex) {
@@ -143,9 +155,5 @@ public class Equation {
 
     protected String getAns() {
         return String.join("+", this.regex);
-    }
-
-    protected static void throwInvalidEquationError(final String equation) {
-        throw new Error("Invalid equation declaration: " + equation);
     }
 }

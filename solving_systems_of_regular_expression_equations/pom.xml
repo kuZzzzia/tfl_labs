@@ -17,6 +17,11 @@
             <artifactId>reader</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>bmstu.iu9</groupId>
+            <artifactId>parser</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <properties>

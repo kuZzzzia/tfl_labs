@@ -6,10 +6,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class Solver {
+    private static final boolean ASSOCIATIVITY = true;
+
     public static void main(String[] args) {
         if (args.length != 1) {
             System.err.println("Usage: java -jar " +
-                    "./solving_... " +
+                    "./solving_... " + //TODO: update
                     "path/to/file/from/resources/folder/with/system/of/equations");
             System.exit(-1);
         }
@@ -38,13 +40,13 @@ public class Solver {
     private static ArrayList<String> solveEquationsSystem(Equation[] equations) {
         int amount = equations.length;
         for (int i = 0; i < amount - 1; i++) {
-            equations[i].reduceVariableFromRightSide();
+            equations[i].reduceVariableFromRightSide(ASSOCIATIVITY);
             for (int j = i + 1; j < amount; j++) {
                 equations[j].substituteVariableInEquation(equations[i]);
             }
         }
         for (int i = amount - 1; i > 0; i--) {
-            equations[i].reduceVariableFromRightSide();
+            equations[i].reduceVariableFromRightSide(ASSOCIATIVITY);
             for (int j = i - 1; j > -1; j--) {
                 equations[j].substituteVariableInEquation(equations[i]);
             }
