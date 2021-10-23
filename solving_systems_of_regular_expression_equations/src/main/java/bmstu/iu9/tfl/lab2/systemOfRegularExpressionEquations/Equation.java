@@ -64,7 +64,7 @@ public class Equation {
         }
     }
 
-    protected void reduceVariableFromRightSide(boolean associativity) {
+    protected void reduceVariableFromRightSide() {
         char varName = this.getVar();
         ArrayList<String> coefficients = variables.get(varName);
         if (coefficients != null) {
@@ -72,20 +72,12 @@ public class Equation {
             variables.remove(varName);
             for (ArrayList<String> var : variables.values()) {
                 String variableCoefficient = makeCoefficient(var);
-                if (associativity) {
-                    variableCoefficient = concatRegexes(coefficient, variableCoefficient);
-                } else {
-                    variableCoefficient = concatRegexes(variableCoefficient, coefficient);
-                }
+                variableCoefficient = concatRegexes(coefficient, variableCoefficient);
                 var.clear();
                 var.add(variableCoefficient);
             }
             String regex = getRegex();
-            if (associativity) {
-                regex = concatRegexes(coefficient, regex);
-            } else {
-                regex = concatRegexes(regex, coefficient);
-            }
+            regex = concatRegexes(coefficient, regex);
             setRegex(regex);
         }
     }

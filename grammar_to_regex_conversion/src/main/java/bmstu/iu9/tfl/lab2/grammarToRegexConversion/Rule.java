@@ -22,8 +22,6 @@ public class Rule {
             if (i != rule.length()) {
                 throw new Error(ERROR_MESSAGE + rule);
             }
-        } else {
-            setEndingNTerm('0');
         }
     }
 

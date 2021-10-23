@@ -60,11 +60,11 @@ public class RegexTestsGenerator {
                     stringBuilder.append((char)result);
                     break;
                 case 2: //integer
-                    int integer = (new Random().nextInt()) & Integer.MAX_VALUE;
+                    int integer = (random.nextInt()) & Integer.MAX_VALUE;
                     stringBuilder.append(integer);
                     break;
                 case 3:
-                    int len = new Random().nextInt(length - i);
+                    int len = random.nextInt(length - i);
                     stringBuilder.append(getRandomHexNumber(len));
                     i += len - 1;
                     break;
@@ -89,7 +89,7 @@ public class RegexTestsGenerator {
                     stringBuilder.append((char)result);
                     break;
                 case 1:
-                    stringBuilder.append(new Random().nextInt(10));
+                    stringBuilder.append(random.nextInt(10));
                     break;
                 case 2:
                     stringBuilder.append('h');
@@ -117,7 +117,7 @@ public class RegexTestsGenerator {
                     stringBuilder.append((char)result);
                     break;
                 case 1:
-                    stringBuilder.append(new Random().nextInt(10));
+                    stringBuilder.append(random.nextInt(10));
                     break;
             }
         }
