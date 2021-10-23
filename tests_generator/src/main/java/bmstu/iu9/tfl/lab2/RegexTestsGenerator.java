@@ -5,7 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Random;
 
-public class RegexTestsCreator {
+public class RegexTestsGenerator {
     private static final String TEST_PATH = "test_";
     private static final int TESTS_AMOUNT = 10;
     private static final String TEST_FILE_EXTENSION = ".txt";
@@ -18,14 +18,14 @@ public class RegexTestsCreator {
             System.exit(-1);
         }
         try {
-            createTests(args[0]);
+            generateTests(args[0]);
         } catch (IOException e) {
             System.err.println(e.getMessage());
             System.exit(-1);
         }
     }
 
-    private static void createTests(String path) throws IOException {
+    private static void generateTests(String path) throws IOException {
         int length = 100;
         for (int i = 0; i < TESTS_AMOUNT; i++) {
             String filepath = path + "/" + TEST_PATH + i + TEST_FILE_EXTENSION;

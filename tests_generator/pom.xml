@@ -26,7 +26,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>bmstu.iu9.tfl.lab2.RegexTestsCreator</mainClass>
+                            <mainClass>bmstu.iu9.tfl.lab2.RegexTestsGenerator</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
