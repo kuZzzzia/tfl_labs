@@ -5,7 +5,6 @@ import bmstu.iu9.tfl.lab2.systemOfRegularExpressionEquations.Equation;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
 public class FiniteAutomata {
     private static final char FINITE_STATE = '#';
