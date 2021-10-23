@@ -68,6 +68,9 @@ public class FiniteAutomata {
         for (int i: findPathMembers(start, finiteState)) {
             regexNTerms.put(i, true);
         }
+        if (regexNTerms.size() == 0) {
+            throw new Error ("No reachable finite state");
+        }
         for (int nTerm: nodeIndices.values()) {
             if (!regexNTerms.containsKey(nTerm)) {
                 ArrayList<Integer> members = new ArrayList<>();

@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>solving_systems_of_regular_expression_equations</artifactId>
+    <artifactId>gr_to_regex_conv</artifactId>
 
     <dependencies>
         <dependency>
@@ -20,6 +20,11 @@
         <dependency>
             <groupId>bmstu.iu9</groupId>
             <artifactId>parser</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>bmstu.iu9</groupId>
+            <artifactId>system_of_regex_equations</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
@@ -39,7 +44,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>bmstu.iu9.tfl.lab2.systemOfRegularExpressionEquations.Solver</mainClass>
+                            <mainClass>bmstu.iu9.tfl.lab2.grammarToRegexConversion.Converter</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

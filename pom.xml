@@ -16,9 +16,9 @@
 
     <modules>
         <module>reader</module>
-        <module>equivalent_regular_expressions</module>
-        <module>solving_systems_of_regular_expression_equations</module>
-        <module>grammar_to_regex_conversion</module>
+        <module>equiv_regexes</module>
+        <module>system_of_regex_equations</module>
+        <module>gr_to_regex_conv</module>
         <module>parser</module>
         <module>tests_generator</module>
     </modules>
