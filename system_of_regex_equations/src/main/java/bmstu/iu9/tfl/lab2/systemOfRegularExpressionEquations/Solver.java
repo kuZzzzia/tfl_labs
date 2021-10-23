@@ -10,7 +10,7 @@ public class Solver {
     public static void main(String[] args) {
         if (args.length != 1) {
             System.err.println("Usage: java -jar " +
-                    "./solving_... " + //TODO: update
+                    "./system_of_regex_equations/target/system_of_regex_equations-1.0-SNAPSHOT.jar " +
                     "path/to/file/from/resources/folder/with/system/of/equations");
             System.exit(-1);
         }

@@ -13,7 +13,7 @@ public class RegexTestsGenerator {
     public static void main(String[] args) {
         if (args.length != 1) {
             System.err.println("Usage: java -jar " +
-                    "./equivalent_regular_expressions/target/equivalent_regular_expressions-1.0-SNAPSHOT.jar " + //TODO: update
+                    "./tests_generator/target/tests_generator-1.0-SNAPSHOT.jar " +
                     "path/without/extension/where/to/create/file");
             System.exit(-1);
         }

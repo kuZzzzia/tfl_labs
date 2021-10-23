@@ -28,7 +28,7 @@ public class MeasureRegexPerformanceApp {
     public static void main(String[] args) {
         if (args.length != 1) {
             System.err.println("Usage: java -jar " +
-                    "./equivalent_regular_expressions/target/equivalent_regular_expressions-1.0-SNAPSHOT.jar " +
+                    "./equiv_regexes/target/equiv_regexes-1.0-SNAPSHOT.jar " +
                     "path/without/extension/where/to/create/file");
             System.exit(-1);
         }

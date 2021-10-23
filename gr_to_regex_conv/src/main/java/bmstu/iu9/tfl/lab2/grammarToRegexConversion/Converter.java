@@ -13,7 +13,7 @@ public class Converter {
     public static void main(String[] args) {
         if (args.length != 1) {
             System.err.println("Usage: java -jar " +
-                    "./grammar_... " + //TODO: update
+                    "../gr_to_regex_conv/target/gr_to_regex_conv-1.0-SNAPSHOT.jar " +
                     "path/to/file/from/resources/folder/with/grammar");
             System.exit(-1);
         }
