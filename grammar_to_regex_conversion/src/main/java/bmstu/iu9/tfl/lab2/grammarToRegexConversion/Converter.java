@@ -1,8 +1,12 @@
 package bmstu.iu9.tfl.lab2.grammarToRegexConversion;
 
 import bmstu.iu9.tfl.lab2.Reader;
+import bmstu.iu9.tfl.lab2.systemOfRegularExpressionEquations.Equation;
+import bmstu.iu9.tfl.lab2.systemOfRegularExpressionEquations.Solver;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 
 public class Converter {
@@ -16,18 +20,24 @@ public class Converter {
         try {
             Reader grammarReader = new Reader(args[0]);
             Rule[] rules = parseRules(grammarReader);
+            FiniteAutomata finiteAutomata = new FiniteAutomata(rules);
+            HashMap<Integer, Boolean> loopsEliminatedRules = finiteAutomata.findRegexMembers();
+            Equation[] equations = finiteAutomata.generateRegexEquationsSystem(loopsEliminatedRules);
+            ArrayList<String> ans = Solver.solveEquationsSystem(equations);
+            printAns(ans);
         } catch (IOException | Error e) {
             System.err.println(e.getMessage());
             System.exit(-1);
         }
-        /*
-        пройтись по всем правым и левым частям и пос
-        Построить автомат
-        Построить по автомату систему уравнений регулярных выражений
+    }
 
-        Вывести регулярку на экран
-        ASSOCIATIVITY = FALSE
-         */
+    private static void printAns(ArrayList<String> ans) {
+        for (String s: ans) {
+            if (s.startsWith("S")) {
+                System.out.println(s);
+                break;
+            }
+        }
     }
 
     private static Rule[] parseRules(Reader grammarReader) {

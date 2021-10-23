@@ -96,7 +96,7 @@ public class Equation {
         if (coefficients.size() == 1) {
             return coefficients.get(0);
         }
-        return "(" + String.join("+", coefficients) + ")";
+        return "(" + String.join("|", coefficients) + ")";
     }
 
     public void substituteVariableInEquation(Equation equation) {
@@ -142,10 +142,10 @@ public class Equation {
         if (this.regex.size() == 1) {
             return this.regex.get(0);
         }
-        return "(" + String.join("+", this.regex) + ")";
+        return "(" + String.join("|", this.regex) + ")";
     }
 
     protected String getAns() {
-        return String.join("+", this.regex);
+        return String.join("|", this.regex);
     }
 }

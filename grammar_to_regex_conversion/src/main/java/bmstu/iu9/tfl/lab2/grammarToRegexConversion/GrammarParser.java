@@ -7,9 +7,9 @@ public class GrammarParser extends Parser {
         super(rule);
     }
 
-    protected int parseLetter(int i) {
+    protected int parseLetter(int i, String regex) {
         String varString = getData().substring(i, i + 1);
-        if (!varString.matches(Parser.LOWERCASE_LETTERS_REGEX)) {
+        if (!varString.matches(regex)) {
             throw new Error(Rule.ERROR_MESSAGE + varString);
         }
         return i + 1;

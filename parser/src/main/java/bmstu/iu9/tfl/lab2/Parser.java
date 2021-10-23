@@ -1,9 +1,9 @@
 package bmstu.iu9.tfl.lab2;
 
 public class Parser {
-    protected static final String LOWERCASE_LETTERS_REGEX = "^[a-z]$";
-    protected static final String WHITESPACE_REGEX = "\\s";
-    protected static final String CAPITAL_LETTERS_REGEX = "^[A-Z]$";
+    public static final String LOWERCASE_LETTERS_REGEX = "^[a-z]$";
+    public static final String WHITESPACE_REGEX = "\\s";
+    public static final String CAPITAL_LETTERS_REGEX = "^[A-Z]$";
 
     private final String data;
 
@@ -24,7 +24,7 @@ public class Parser {
     }
 
     public int presenceString(String s, int i, String err) {
-        if (!data.startsWith(s)) {
+        if (!data.substring(i).startsWith(s)) {
             throw new Error(err + data);
         }
         i += s.length();

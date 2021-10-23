@@ -36,7 +36,7 @@ public class Solver {
         return parsedEquations;
     }
 
-    private static ArrayList<String> solveEquationsSystem(Equation[] equations) {
+    public static ArrayList<String> solveEquationsSystem(Equation[] equations) {
         int amount = equations.length;
         for (int i = 0; i < amount - 1; i++) {
             equations[i].reduceVariableFromRightSide();
