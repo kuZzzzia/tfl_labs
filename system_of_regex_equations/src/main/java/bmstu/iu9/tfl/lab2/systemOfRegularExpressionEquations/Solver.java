@@ -38,17 +38,21 @@ public class Solver {
 
     public static ArrayList<String> solveEquationsSystem(Equation[] equations) {
         int amount = equations.length;
-        for (int i = 0; i < amount - 1; i++) {
-            equations[i].reduceVariableFromRightSide();
-            for (int j = i + 1; j < amount; j++) {
-                equations[j].substituteVariableInEquation(equations[i]);
+        if (amount != 1) {
+            for (int i = 0; i < amount - 1; i++) {
+                equations[i].reduceVariableFromRightSide();
+                for (int j = i + 1; j < amount; j++) {
+                    equations[j].substituteVariableInEquation(equations[i]);
+                }
             }
-        }
-        for (int i = amount - 1; i > 0; i--) {
-            equations[i].reduceVariableFromRightSide();
-            for (int j = i - 1; j > -1; j--) {
-                equations[j].substituteVariableInEquation(equations[i]);
+            for (int i = amount - 1; i > 0; i--) {
+                equations[i].reduceVariableFromRightSide();
+                for (int j = i - 1; j > -1; j--) {
+                    equations[j].substituteVariableInEquation(equations[i]);
+                }
             }
+        } else {
+            equations[0].reduceVariableFromRightSide();
         }
         ArrayList<String> ans = new ArrayList<>();
         for (Equation equation : equations) {
