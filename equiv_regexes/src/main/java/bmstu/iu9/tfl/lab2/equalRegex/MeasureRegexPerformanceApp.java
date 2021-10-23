@@ -15,7 +15,7 @@ public class MeasureRegexPerformanceApp {
     private static final int LAZY_KLEENE_ITERATION_REGEX_INDEX = 2;
 
     private static final String TEST_PATH = "test_";
-    private static final int TESTS_AMOUNT = 20;
+    private static final int TESTS_AMOUNT = 10;
     private static final String TEST_FILE_EXTENSION = ".txt";
     private static final String CSV_FILE_EXTENSION = ".csv";
 
