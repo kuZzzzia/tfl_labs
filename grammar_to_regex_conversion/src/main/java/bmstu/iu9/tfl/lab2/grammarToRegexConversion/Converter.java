@@ -1,6 +1,6 @@
-package bmstu.tfl.lab2.grammarToRegexConversion;
+package bmstu.iu9.tfl.lab2.grammarToRegexConversion;
 
-import bmstu.tfl.lab2.Reader;
+import bmstu.iu9.tfl.lab2.Reader;
 
 import java.io.IOException;
 
@@ -16,14 +16,11 @@ public class Converter {
         try {
             Reader grammarReader = new Reader(args[0]);
             Rule[] rules = parseRules(grammarReader);
-
         } catch (IOException | Error e) {
             System.err.println(e.getMessage());
             System.exit(-1);
         }
         /*
-        Считать данные из файла
-        Распарсить строки (одно правило - в одной строке)
         Построить автомат
         Построить по автомату систему уравнений регулярных выражений
 

@@ -1,4 +1,4 @@
-package bmstu.tfl.lab2.equalRegex;
+package bmstu.iu9.tfl.lab2.equalRegex;
 
 import java.io.BufferedReader;
 import java.io.IOException;

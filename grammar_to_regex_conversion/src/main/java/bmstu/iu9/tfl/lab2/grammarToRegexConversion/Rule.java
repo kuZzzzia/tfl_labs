@@ -1,4 +1,4 @@
-package bmstu.tfl.lab2.grammarToRegexConversion;
+package bmstu.iu9.tfl.lab2.grammarToRegexConversion;
 
 public class Rule {
     private char startingNTerm;

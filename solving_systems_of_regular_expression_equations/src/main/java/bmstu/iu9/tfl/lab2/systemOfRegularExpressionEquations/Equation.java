@@ -1,4 +1,4 @@
-package bmstu.tfl.lab2.systemOfRegularExpressionEquations;
+package bmstu.iu9.tfl.lab2.systemOfRegularExpressionEquations;
 
 import java.util.ArrayList;
 import java.util.HashMap;

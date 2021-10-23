@@ -20,6 +20,7 @@
         <module>solving_systems_of_regular_expression_equations</module>
         <module>grammar_to_regex_conversion</module>
         <module>parser</module>
+        <module>tests_creator</module>
     </modules>
     
 </project>

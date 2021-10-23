@@ -44,7 +44,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>bmstu.tfl.lab2.grammarToRegexConversion.Converter</mainClass>
+                            <mainClass>bmstu.iu9.tfl.lab2.grammarToRegexConversion.Converter</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

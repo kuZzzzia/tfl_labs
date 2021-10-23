@@ -1,6 +1,6 @@
-package bmstu.tfl.lab2.grammarToRegexConversion;
+package bmstu.iu9.tfl.lab2.grammarToRegexConversion;
 
-import bmstu.tfl.lab2.Parser;
+import bmstu.iu9.tfl.lab2.Parser;
 
 public class GrammarParser extends Parser {
     public GrammarParser(String rule) {

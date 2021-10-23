@@ -1,4 +1,4 @@
-package bmstu.tfl.lab2.equalRegex;
+package bmstu.iu9.tfl.lab2.equalRegex;
 
 import java.io.*;
 import java.util.regex.Matcher;
@@ -6,16 +6,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MeasureRegexPerformanceApp {
-    private static final String ACADEMIC_REGEX = "(a|b|c)*a";
-    private static final String NEGATION_REGEX = "(a|b|c)*a";
-    private static final String LAZY_KLEENE_ITERATION_REGEX = "(a|b|c)*a";
+    private static final String ACADEMIC_REGEX = "((((0[A-F])|[1-9])[0-9A-F]*)|0)h";
+    private static final String NEGATION_REGEX = "(((([^1-9A-Za-z][^0-9a-zG-Z])|[^0A-Za-z])[^a-zG-z]*)|[^1-9A-Za-z])[^0-9A-Za-gi-z]";
+    private static final String LAZY_KLEENE_ITERATION_REGEX = "((((0[A-F])|[1-9])[0-9A-F]*?)|0)h";
 
     private static final int ACADEMIC_REGEX_INDEX = 0;
     private static final int NEGATION_REGEX_INDEX = 1;
     private static final int LAZY_KLEENE_ITERATION_REGEX_INDEX = 2;
 
     private static final String TEST_PATH = "test_";
-    private static final int TESTS_AMOUNT = 10;
+    private static final int TESTS_AMOUNT = 20;
     private static final String TEST_FILE_EXTENSION = ".txt";
     private static final String CSV_FILE_EXTENSION = ".csv";
 
@@ -36,7 +36,7 @@ public class MeasureRegexPerformanceApp {
         try {
             runTests(measures);
             writeDataToCSVFile(measures, args[0]);
-        } catch (IOException | Error e) {
+        } catch (IOException | Error | NullPointerException e) {
             System.err.println(e.getMessage());
             System.exit(-1);
         }
@@ -56,7 +56,7 @@ public class MeasureRegexPerformanceApp {
         Pattern lazyKleeneIterationRegexPattern = compileRegex(LAZY_KLEENE_ITERATION_REGEX);
 
         for (int i = 0; i < TESTS_AMOUNT; i++) {
-            String filepath = TEST_PATH + (i+1) + TEST_FILE_EXTENSION;
+            String filepath = TEST_PATH + i + TEST_FILE_EXTENSION;
             TestReader reader = new TestReader(filepath);
             String test = reader.getData();
 

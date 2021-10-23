@@ -1,4 +1,4 @@
-package bmstu.tfl.lab2;
+package bmstu.iu9.tfl.lab2;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;

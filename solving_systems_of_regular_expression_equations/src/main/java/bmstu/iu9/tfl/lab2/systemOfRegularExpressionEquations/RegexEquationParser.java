@@ -1,9 +1,9 @@
-package bmstu.tfl.lab2.systemOfRegularExpressionEquations;
+package bmstu.iu9.tfl.lab2.systemOfRegularExpressionEquations;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import bmstu.tfl.lab2.Parser;
+import bmstu.iu9.tfl.lab2.Parser;
 
 public class RegexEquationParser extends Parser {
     private static final String ERROR_MESSAGE = "Invalid equation declaration: ";

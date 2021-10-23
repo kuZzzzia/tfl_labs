@@ -39,7 +39,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>bmstu.tfl.lab2.systemOfRegularExpressionEquations.Solver</mainClass>
+                            <mainClass>bmstu.iu9.tfl.lab2.systemOfRegularExpressionEquations.Solver</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

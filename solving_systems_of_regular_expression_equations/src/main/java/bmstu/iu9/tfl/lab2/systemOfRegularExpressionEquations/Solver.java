@@ -1,6 +1,6 @@
-package bmstu.tfl.lab2.systemOfRegularExpressionEquations;
+package bmstu.iu9.tfl.lab2.systemOfRegularExpressionEquations;
 
-import bmstu.tfl.lab2.Reader;
+import bmstu.iu9.tfl.lab2.Reader;
 
 import java.io.IOException;
 import java.util.ArrayList;

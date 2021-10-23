@@ -1,4 +1,4 @@
-package bmstu.tfl.lab2;
+package bmstu.iu9.tfl.lab2;
 
 public class Parser {
     protected static final String LOWERCASE_LETTERS_REGEX = "^[a-z]$";
