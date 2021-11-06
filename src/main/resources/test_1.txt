@@ -1,0 +1,8 @@
+S -> abAB
+A -> qA
+A -> wB
+B -> q
+
+
+
+
