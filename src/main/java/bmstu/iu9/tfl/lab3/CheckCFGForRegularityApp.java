@@ -9,7 +9,7 @@ public class CheckCFGForRegularityApp {
             System.exit(-1);
         }
         try {
-            GrammarRules rules = new GrammarRules(args[0]);
+            Grammar rules = new Grammar(args[0]);
         } catch (IOException | Error e) {
             System.err.println(e.getMessage());
             System.exit(-1);

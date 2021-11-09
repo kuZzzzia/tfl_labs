@@ -1,6 +1,6 @@
 S -> abAB
-A -> qA
-A -> wB
+A -> qsAaaa
+A -> aaawB
 B -> q
 
 
