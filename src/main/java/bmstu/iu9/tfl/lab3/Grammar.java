@@ -10,14 +10,14 @@ public class Grammar extends Reader {
     private static final String EMPTY_STRING = "";
     private static final String RULE_SEPARATOR = "->";
     private static final String STARTING_NONTERM_REGEX = "S";
-    private static final int RULE_SEPARATOR_LENGTH = 2;
-    private static final int STARTING_CHAR_INDEX = 0;
+    private static final int    RULE_SEPARATOR_LENGTH = 2;
+    private static final int    STARTING_CHAR_INDEX = 0;
 
 
-    private final Map<String, RuleRightSide> rules;
-    private final Set<String> nontermsUsed;
-    private final Map<String, Set<String>> regularNontermsSubsets;
-    private final Set<String> notRegularNonterms;
+    private final Map<String, RuleRightSide>    rules;
+    private final Set<String>                   nontermsUsed;
+    private final Map<String, Set<String>>      regularNontermsSubsets;
+    private final Set<String>                   notRegularNonterms;
 
     protected Grammar(String path) throws IOException {
         super(path);
@@ -89,6 +89,7 @@ public class Grammar extends Reader {
         for (String nonterm : rules.keySet()) {
             if (!notRegularNonterms.contains(nonterm)) {
                 regularNontermsSubsets.put(nonterm, rules.get(nonterm).getDependency());
+                rules.get(nonterm).setRegularSubsetKey(nonterm);
             }
         }
         Set<String> regularNonterms = new HashSet<>(regularNontermsSubsets.keySet());
@@ -99,6 +100,7 @@ public class Grammar extends Reader {
                     if (!nonterm1.equals(nonterm2) && regularNontermsSubsets.containsKey(nonterm2)
                             && regularNontermsSubsets.get(nonterm1).contains(nonterm2)) {
                         regularNontermsSubsets.remove(nonterm2);
+                        rules.get(nonterm2).setRegularSubsetKey(nonterm1);
                     }
                 }
             }
@@ -125,9 +127,13 @@ public class Grammar extends Reader {
         stackBuildDependency.remove(nonterm);
     }
 
-
-
-    protected Map<String, RuleRightSide> getRules() {
-        return rules;
+    protected Set<String> getNontermsAchievableFromStartingNonterm() {
+        Set<String> nontermsAchievableFromStartingNonterm = new HashSet<>();
+        for (String expr : rules.get(STARTING_NONTERM_REGEX).getDependency()) {
+            if (expr.matches(RuleRightSide.NONTERM_REGEX)) {
+                nontermsAchievableFromStartingNonterm.add(expr);
+            }
+        }
+        return nontermsAchievableFromStartingNonterm;
     }
 }

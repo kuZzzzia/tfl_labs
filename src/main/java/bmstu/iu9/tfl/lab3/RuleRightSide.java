@@ -3,12 +3,14 @@ package bmstu.iu9.tfl.lab3;
 import java.util.*;
 
 public class RuleRightSide {
-    private static final int REGULAR_RULE_ONLY_OF_TERMS_LENGTH = 1;
-    private static final int INDEX_OF_TERM_STRING_IN_REGULAR_RULE = 0;
-    protected static final String NONTERM_REGEX = "^[A-Z][0-9]*$";
+    private static final int        REGULAR_RULE_ONLY_OF_TERMS_LENGTH = 1;
+    private static final int        INDEX_OF_TERM_STRING_IN_REGULAR_RULE = 0;
+    protected static final String   NONTERM_REGEX = "^[A-Z][0-9]*$";
 
     private final List<String[]> rewritingVariants;
+
     private Set<String> dependency;
+    private String      regularSubsetKey;
 
     public RuleRightSide(String[] rewritingVariant) {
         this.rewritingVariants = new ArrayList<>(Collections.singleton(rewritingVariant));
@@ -49,5 +51,9 @@ public class RuleRightSide {
 
     protected boolean checkNontermDependency(String nonterm) {
         return dependency.contains(nonterm);
+    }
+
+    protected void setRegularSubsetKey(String regularSubsetKey) {
+        this.regularSubsetKey = regularSubsetKey;
     }
 }

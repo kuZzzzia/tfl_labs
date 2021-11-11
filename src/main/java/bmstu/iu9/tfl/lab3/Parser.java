@@ -8,8 +8,8 @@ public class Parser {
     private static final String NONTERM_CHAR_REGEX = "[A-Z]";
     private static final String TERM_CHAR_REGEX = "[a-z]";
     private static final String DIGIT_REGEX = "[0-9]";
-    private static final int ENDING_INDEX_OF_PARSED_TERM_OR_NONTERM = 1;
-    private static final int STARTING_CHAR_INDEX = 0;
+    private static final int    ENDING_INDEX_OF_PARSED_TERM_OR_NONTERM = 1;
+    private static final int    STARTING_CHAR_INDEX = 0;
 
     private final String[] parsedRuleRightSide;
 
