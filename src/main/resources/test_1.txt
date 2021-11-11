@@ -1,8 +1,8 @@
-S -> abAB
-A -> qsAaaa
-A -> aaawB
-B -> q
-
+S -> abA
+A -> aaaB
+B -> x
+C -> y
+S -> abCC
 
 
 

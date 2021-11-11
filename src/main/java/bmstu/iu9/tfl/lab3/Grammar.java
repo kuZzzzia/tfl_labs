@@ -9,23 +9,24 @@ public class Grammar extends Reader {
     private static final String WHITESPACE_REGEX = "\\s";
     private static final String EMPTY_STRING = "";
     private static final String RULE_SEPARATOR = "->";
-    private static final String NONTERM_REGEX = "[A-Z]";
-    private static final String TERM_REGEX = "[a-z]";
-    private static final String DIGIT_REGEX = "[0-9]";
     private static final String STARTING_NONTERM_REGEX = "S";
     private static final int RULE_SEPARATOR_LENGTH = 2;
-    private static final int ENDING_INDEX_OF_PARSED_TERM_OR_NONTERM = 1;
     private static final int STARTING_CHAR_INDEX = 0;
 
 
     private final Map<String, RuleRightSide> rules;
     private final Set<String> nontermsUsed;
+    private final Map<String, Set<String>> regularNontermsSubsets;
+    private final Set<String> notRegularNonterms;
 
     protected Grammar(String path) throws IOException {
         super(path);
         nontermsUsed = new HashSet<>();
         rules = new HashMap<>();
+        regularNontermsSubsets = new HashMap<>();
+        notRegularNonterms = new HashSet<>();
         parseRules(super.getData());
+        makeRegularSubsets();
     }
 
     private void parseRules(String[] data) {
@@ -38,8 +39,11 @@ public class Grammar extends Reader {
             String ruleLeftSide = line.substring(STARTING_CHAR_INDEX, indexOfRuleSeparator);
             String ruleRightSideString = line.substring(indexOfRuleSeparator + RULE_SEPARATOR_LENGTH);
 
-            String[] newRightSide = splitRuleRightSideIntoArrayOfNontermsAndTerms(ruleRightSideString)
-                    .toArray(new String[0]);
+            String[] newRightSide = new Parser(ruleRightSideString, nontermsUsed).getParsedRuleRightSide();
+
+            if (newRightSide.length > 2) {
+                notRegularNonterms.add(ruleLeftSide);
+            }
 
             RuleRightSide rightSide = rules.get(ruleLeftSide);
 
@@ -48,8 +52,8 @@ public class Grammar extends Reader {
             } else {
                 rules.put(ruleLeftSide, new RuleRightSide(newRightSide));
             }
-
         }
+
 
         if (nontermsUsed.contains(STARTING_NONTERM_REGEX)) {
             throw new Error("Starting terminal S appeared on the right side of a rule");
@@ -60,45 +64,68 @@ public class Grammar extends Reader {
         }
     }
 
-    private List<String> splitRuleRightSideIntoArrayOfNontermsAndTerms(final String ruleRightSideString) {
-        List<String> ruleRightSideTermsAndNonterms = new ArrayList<>();
-        StringBuilder ruleRightSide = new StringBuilder(ruleRightSideString);
+    private void makeRegularSubsets() {
+        Set<String> stackBuildDependency = new HashSet<>();
+        Queue<String> newNotRegularNonterms = new PriorityQueue<>(rules.size());
 
-        while (ruleRightSide.length() != 0) {
-            parseTermOrNonterm(
-                    ruleRightSide,
-                    ruleRightSideTermsAndNonterms
-            );
+        for (String nonterm : rules.keySet()) {
+            if (rules.get(nonterm).checkNullDependency()) {
+                buildDependency(nonterm, stackBuildDependency, newNotRegularNonterms);
+            }
         }
 
-        return ruleRightSideTermsAndNonterms;
-    }
-
-    private void parseTermOrNonterm(StringBuilder rule, List<String> ruleRightSideTermsAndNonterms) {
-        if (getCharAsString(rule, STARTING_CHAR_INDEX).matches(NONTERM_REGEX)) {
-            String nonterm = parse(rule, DIGIT_REGEX);
-            ruleRightSideTermsAndNonterms.add(nonterm);
-            nontermsUsed.add(nonterm);
-            return;
+        while (!newNotRegularNonterms.isEmpty()) {
+            String notRegularNonterm = newNotRegularNonterms.poll();
+            for (String nonterm : rules.keySet()) {
+                if (!notRegularNonterms.contains(nonterm)
+                        && !nonterm.equals(notRegularNonterm)
+                        && rules.get(nonterm).checkNontermDependency(notRegularNonterm)) {
+                    newNotRegularNonterms.add(nonterm);
+                }
+            }
+            notRegularNonterms.add(notRegularNonterm);
         }
-        ruleRightSideTermsAndNonterms.add(parse(rule, TERM_REGEX));
-    }
 
-    private String parse(final StringBuilder rule, final String regex) {
-        int endIndexOfUnit = ENDING_INDEX_OF_PARSED_TERM_OR_NONTERM;
-        while (endIndexOfUnit < rule.length()
-                && getCharAsString(rule, endIndexOfUnit).matches(regex)) {
-            endIndexOfUnit++;
+        for (String nonterm : rules.keySet()) {
+            if (!notRegularNonterms.contains(nonterm)) {
+                regularNontermsSubsets.put(nonterm, rules.get(nonterm).getDependency());
+            }
         }
-        String unit = rule.substring(STARTING_CHAR_INDEX, endIndexOfUnit);
-        rule.delete(STARTING_CHAR_INDEX, endIndexOfUnit);
+        Set<String> regularNonterms = new HashSet<>(regularNontermsSubsets.keySet());
 
-        return unit;
+        for (String nonterm1 : regularNonterms) {
+            if (regularNontermsSubsets.containsKey(nonterm1)) {
+                for (String nonterm2 : regularNonterms) {
+                    if (!nonterm1.equals(nonterm2) && regularNontermsSubsets.containsKey(nonterm2)
+                            && regularNontermsSubsets.get(nonterm1).contains(nonterm2)) {
+                        regularNontermsSubsets.remove(nonterm2);
+                    }
+                }
+            }
+        }
     }
 
-    private static String getCharAsString(final StringBuilder s, final int index) {
-        return String.valueOf(s.charAt(index));
+    private void buildDependency(String nonterm, Set<String> stackBuildDependency, Queue<String> newNotRegularRules) {
+        RuleRightSide ruleRightSide = rules.get(nonterm);
+        stackBuildDependency.add(nonterm);
+        Set<String> firstLevelDependency = ruleRightSide.getFirstLevelDependency();
+        Set<String> fullDependency = new HashSet<>(firstLevelDependency);
+        for (String expr : firstLevelDependency) {
+            if (expr.matches(RuleRightSide.NONTERM_REGEX) && !stackBuildDependency.contains(expr)) {
+                if (rules.get(expr).checkNullDependency()) {
+                    buildDependency(expr, stackBuildDependency, newNotRegularRules);
+                }
+                fullDependency.addAll(rules.get(expr).getDependency());
+                if (notRegularNonterms.contains(expr)) {
+                    newNotRegularRules.add(nonterm);
+                }
+            }
+        }
+        ruleRightSide.setDependency(fullDependency);
+        stackBuildDependency.remove(nonterm);
     }
+
+
 
     protected Map<String, RuleRightSide> getRules() {
         return rules;
