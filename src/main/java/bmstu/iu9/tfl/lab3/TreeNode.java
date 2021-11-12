@@ -169,4 +169,8 @@ public class TreeNode {
     protected Set<StringBuilder> getWords() {
         return this.words;
     }
+
+    protected String getNodeExpr() {
+        return nodeExpr;
+    }
 }

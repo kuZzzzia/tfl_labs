@@ -140,4 +140,8 @@ public class Grammar extends Reader {
     protected List<String[]> getNontermRewritingVariants(String nonterm) {
         return rules.get(nonterm).getRewritingVariants();
     }
+
+    protected Map<String, Set<String>> getRegularNontermsSubsets() {
+        return regularNontermsSubsets;
+    }
 }
