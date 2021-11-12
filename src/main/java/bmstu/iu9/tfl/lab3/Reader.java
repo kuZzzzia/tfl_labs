@@ -49,9 +49,5 @@ public class Reader {
     public String[] getData() {
         return this.data;
     }
-
-    public String getData(int i) {
-        return this.data[i];
-    }
 }
 

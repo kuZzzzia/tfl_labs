@@ -136,4 +136,8 @@ public class Grammar extends Reader {
         }
         return nontermsAchievableFromStartingNonterm;
     }
+
+    protected List<String[]> getNontermRewritingVariants(String nonterm) {
+        return rules.get(nonterm).getRewritingVariants();
+    }
 }

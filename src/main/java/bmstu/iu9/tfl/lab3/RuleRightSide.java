@@ -56,4 +56,8 @@ public class RuleRightSide {
     protected void setRegularSubsetKey(String regularSubsetKey) {
         this.regularSubsetKey = regularSubsetKey;
     }
+
+    protected List<String[]> getRewritingVariants() {
+        return this.rewritingVariants;
+    }
 }
