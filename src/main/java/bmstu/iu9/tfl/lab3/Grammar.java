@@ -69,8 +69,11 @@ public class Grammar extends Reader {
         Queue<String> newNotRegularNonterms = new PriorityQueue<>(rules.size());
 
         for (String nonterm : rules.keySet()) {
+            rules.get(nonterm).buildFirstLevelDependency();
+        }
+
+        for (String nonterm : rules.keySet()) {
             if (rules.get(nonterm).checkDependencyIsNull()) {
-                rules.get(nonterm).buildFirstLevelDependency();
                 buildDependency(nonterm, stackBuildDependency, newNotRegularNonterms);
             }
         }
