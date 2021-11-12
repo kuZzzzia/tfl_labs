@@ -27,9 +27,44 @@ public class CheckCFGForRegularityApp {
                         suspiciousNonterms
                 );
             }
+            if (suspiciousNonterms.isEmpty()) {
+                probablyRegularNontermsSetClosure(probablyRegularNonterms, regularNonterms, rules);
+
+            } else {
+                //TODO: graphviz
+            }
         } catch (IOException | Error e) {
             System.err.println(e.getMessage());
             System.exit(-1);
         }
     }
+
+    private static void probablyRegularNontermsSetClosure(Set<String> probablyRegularNonterms, Set<String> regularNonterms, Grammar rules) {
+        Queue<String> newRegularNonterms = new PriorityQueue<>();
+        function(probablyRegularNonterms, regularNonterms, rules, newRegularNonterms);
+        while (!newRegularNonterms.isEmpty()) {
+            regularNonterms.add(newRegularNonterms.poll());
+            function(probablyRegularNonterms, regularNonterms, rules, newRegularNonterms);
+        }
+    }
+
+    private static void function(Set<String> probablyRegularNonterms, Set<String> regularNonterms, Grammar rules, Queue<String> newRegularNonterms) { //TODO: rename
+        for (String nonterm : probablyRegularNonterms) {
+            if (checkRewritingRulesContainOnlyRegularNonterms(nonterm, regularNonterms, rules)) {
+                newRegularNonterms.add(nonterm);
+                probablyRegularNonterms.remove(nonterm);
+            }
+        }
+    }
+
+    private static boolean checkRewritingRulesContainOnlyRegularNonterms(String nonterm, Set<String> regularNonterms, Grammar rules) {
+        Set<String> nontermFirstLevelDependency = rules.getNontermFirstLevelDependency(nonterm);
+        for (String dependNonterm : nontermFirstLevelDependency) {
+            if (!regularNonterms.contains(dependNonterm)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 }

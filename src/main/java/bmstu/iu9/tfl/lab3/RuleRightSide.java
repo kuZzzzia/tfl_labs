@@ -9,8 +9,8 @@ public class RuleRightSide {
 
     private final List<String[]> rewritingVariants;
 
+    private Set<String> firstLevelDependency;
     private Set<String> dependency;
-    private String      regularSubsetKey;
 
     public RuleRightSide(String[] rewritingVariant) {
         this.rewritingVariants = new ArrayList<>(Collections.singleton(rewritingVariant));
@@ -21,7 +21,7 @@ public class RuleRightSide {
         rewritingVariants.add(newRightSide);
     }
 
-    protected Set<String> getFirstLevelDependency() {
+    public void buildFirstLevelDependency() {
         Set<String> firstLevelDependency = new HashSet<>();
         for (String[] rewritingRule: rewritingVariants) {
             if (rewritingRule.length == REGULAR_RULE_ONLY_OF_TERMS_LENGTH) {
@@ -34,6 +34,10 @@ public class RuleRightSide {
                 }
             }
         }
+        this.firstLevelDependency = firstLevelDependency;
+    }
+
+    protected Set<String> getFirstLevelDependency() {
         return firstLevelDependency;
     }
 
@@ -45,16 +49,12 @@ public class RuleRightSide {
         return new HashSet<>(dependency);
     }
 
-    protected boolean checkNullDependency() {
+    protected boolean checkDependencyIsNull() {
          return dependency == null;
     }
 
     protected boolean checkNontermDependency(String nonterm) {
         return dependency.contains(nonterm);
-    }
-
-    protected void setRegularSubsetKey(String regularSubsetKey) {
-        this.regularSubsetKey = regularSubsetKey;
     }
 
     protected List<String[]> getRewritingVariants() {

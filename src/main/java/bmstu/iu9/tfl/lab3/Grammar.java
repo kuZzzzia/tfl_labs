@@ -69,7 +69,8 @@ public class Grammar extends Reader {
         Queue<String> newNotRegularNonterms = new PriorityQueue<>(rules.size());
 
         for (String nonterm : rules.keySet()) {
-            if (rules.get(nonterm).checkNullDependency()) {
+            if (rules.get(nonterm).checkDependencyIsNull()) {
+                rules.get(nonterm).buildFirstLevelDependency();
                 buildDependency(nonterm, stackBuildDependency, newNotRegularNonterms);
             }
         }
@@ -89,7 +90,6 @@ public class Grammar extends Reader {
         for (String nonterm : rules.keySet()) {
             if (!notRegularNonterms.contains(nonterm)) {
                 regularNontermsSubsets.put(nonterm, rules.get(nonterm).getDependency());
-                rules.get(nonterm).setRegularSubsetKey(nonterm);
             }
         }
         Set<String> regularNonterms = new HashSet<>(regularNontermsSubsets.keySet());
@@ -100,7 +100,6 @@ public class Grammar extends Reader {
                     if (!nonterm1.equals(nonterm2) && regularNontermsSubsets.containsKey(nonterm2)
                             && regularNontermsSubsets.get(nonterm1).contains(nonterm2)) {
                         regularNontermsSubsets.remove(nonterm2);
-                        rules.get(nonterm2).setRegularSubsetKey(nonterm1);
                     }
                 }
             }
@@ -114,7 +113,7 @@ public class Grammar extends Reader {
         Set<String> fullDependency = new HashSet<>(firstLevelDependency);
         for (String expr : firstLevelDependency) {
             if (expr.matches(RuleRightSide.NONTERM_REGEX) && !stackBuildDependency.contains(expr)) {
-                if (rules.get(expr).checkNullDependency()) {
+                if (rules.get(expr).checkDependencyIsNull()) {
                     buildDependency(expr, stackBuildDependency, newNotRegularRules);
                 }
                 fullDependency.addAll(rules.get(expr).getDependency());
@@ -143,5 +142,9 @@ public class Grammar extends Reader {
 
     protected Map<String, Set<String>> getRegularNontermsSubsets() {
         return regularNontermsSubsets;
+    }
+
+    protected Set<String> getNontermFirstLevelDependency(String nonterm) {
+        return rules.get(nonterm).getFirstLevelDependency();
     }
 }
