@@ -29,9 +29,19 @@ public class CheckCFGForRegularityApp {
             }
             if (suspiciousNonterms.isEmpty()) {
                 probablyRegularNontermsSetClosure(probablyRegularNonterms, regularNonterms, rules);
-
+                printNontermSets(probablyRegularNonterms, regularNonterms, suspiciousNonterms);
+                if (regularNonterms.isEmpty()) {
+                    System.out.println("Can not determine language regularity");
+                } else if (probablyRegularNonterms.isEmpty()) {
+                    System.out.println("Language is regular");
+                } else {
+                    System.out.println("Language is probably regular");
+                }
             } else {
-                //TODO: graphviz
+                printNontermSets(probablyRegularNonterms, regularNonterms, suspiciousNonterms);
+//                for (String suspiciousNonterm : suspiciousNonterms) {
+//                    generateDigraph(); //TODO: implement method (graphviz)
+//                }
             }
         } catch (IOException | Error e) {
             System.err.println(e.getMessage());
@@ -41,14 +51,14 @@ public class CheckCFGForRegularityApp {
 
     private static void probablyRegularNontermsSetClosure(Set<String> probablyRegularNonterms, Set<String> regularNonterms, Grammar rules) {
         Queue<String> newRegularNonterms = new PriorityQueue<>();
-        function(probablyRegularNonterms, regularNonterms, rules, newRegularNonterms);
+        closeSet(probablyRegularNonterms, regularNonterms, rules, newRegularNonterms);
         while (!newRegularNonterms.isEmpty()) {
             regularNonterms.add(newRegularNonterms.poll());
-            function(probablyRegularNonterms, regularNonterms, rules, newRegularNonterms);
+            closeSet(probablyRegularNonterms, regularNonterms, rules, newRegularNonterms);
         }
     }
 
-    private static void function(Set<String> probablyRegularNonterms, Set<String> regularNonterms, Grammar rules, Queue<String> newRegularNonterms) { //TODO: rename
+    private static void closeSet(Set<String> probablyRegularNonterms, Set<String> regularNonterms, Grammar rules, Queue<String> newRegularNonterms) {
         for (String nonterm : probablyRegularNonterms) {
             if (checkRewritingRulesContainOnlyRegularNonterms(nonterm, regularNonterms, rules)) {
                 newRegularNonterms.add(nonterm);
@@ -65,6 +75,15 @@ public class CheckCFGForRegularityApp {
             }
         }
         return true;
+    }
+
+    private static void printNontermSets(Set<String> probablyRegularNonterms, Set<String> regularNonterms, Set<String> suspiciousNonterms) {
+        System.out.print("Regular nonterms: ");
+        System.out.println(regularNonterms);
+        System.out.print("Probably regular nonterms: ");
+        System.out.println(probablyRegularNonterms);
+        System.out.print("Suspicious nonterms: ");
+        System.out.println(suspiciousNonterms);
     }
 
 }
