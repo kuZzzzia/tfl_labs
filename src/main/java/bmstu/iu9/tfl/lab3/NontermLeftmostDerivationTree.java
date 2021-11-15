@@ -13,16 +13,17 @@ public class NontermLeftmostDerivationTree {
         node = new TreeNode(nonterm, rules, nonterm, false, new HashSet<>());
     }
 
-    protected void function(Map<String, NontermLeftmostDerivationTree> leftmostDerivations,
-                            Map<String, Set<String>> regularNontermsSubsets,
-                            Set<String> regularNonterms,
-                            Set<String> probablyRegularNonterms,
-                            Set<String> suspiciousNonterms) {
+    protected void categorizeNonterm(
+            Map<String, NontermLeftmostDerivationTree> leftmostDerivations,
+            Map<String, Set<String>> regularNontermsSubsets,
+            Set<String> regularNonterms,
+            Set<String> probablyRegularNonterms,
+            Set<String> suspiciousNonterms) {
         if (!node.checkRootNontermFound()) {
             probablyRegularNonterms.add(node.getNodeExpr());
             return;
         }
-        String prefix = node.buildLeftMostDerivationToRootNonterm(node.getNodeExpr());
+        String prefix = node.buildLeftMostDerivationToRootNonterm();
         List<String> suffix = node.getNontermsAndTermsSuffixOfRootNontermDerivationTree();
         if (suffix.isEmpty()) {
             probablyRegularNonterms.add(node.getNodeExpr());
@@ -50,11 +51,6 @@ public class NontermLeftmostDerivationTree {
             return;
         }
         suspiciousNonterms.add(node.getNodeExpr());
-        //recursiveClosureOfAllNonterms that were created by NontermLeftmostDerivationTree
-        // if (all nonterms are regular) then it is regular
-        // if (all terms are regular and probably_regular) then it is probably_regular
-        // if (all terms are probably_regular) then it is probably_regular
-        // if it has all non-terms that are probably_regular then language regularity can not be determined
     }
 
 
@@ -90,7 +86,7 @@ public class NontermLeftmostDerivationTree {
             if (word.length() == 0) {
                 return false;
             }
-            for (StringBuilder prefix : leftmostDerivations.get(pattern).node.getWords()) {
+            for (StringBuilder prefix : leftmostDerivations.get(pattern).node.getWords()) { //TODO : problem
                 StringBuilder wordCopy = new StringBuilder(word.toString());
                 if (checkWordPrefixCanBeRecognisedByRule(leftmostDerivations, wordCopy, suffix, i + 1)) {
                     return true;
@@ -109,8 +105,21 @@ public class NontermLeftmostDerivationTree {
         return true;
     }
 
+    protected String getGraphvizRepresentation() {
+        return "digraph {"
+                + node.getGraphvizRepresentation()
+                + "}";
+    }
+
     private boolean checkRegularSubsetContainsRootNonterm(Set<String> regularSubset) {
         return regularSubset.contains(node.getNodeExpr());
     }
 
+    protected boolean checkRecursionInDerivationFound() {
+        return node.getRootNontermFound();
+    }
+
+    protected String getNonterm() {
+        return node.getNodeExpr();
+    }
 }

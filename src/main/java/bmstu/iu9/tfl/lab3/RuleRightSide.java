@@ -58,6 +58,6 @@ public class RuleRightSide {
     }
 
     protected List<String[]> getRewritingVariants() {
-        return this.rewritingVariants;
+        return rewritingVariants;
     }
 }

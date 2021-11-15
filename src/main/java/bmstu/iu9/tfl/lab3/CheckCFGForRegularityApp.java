@@ -1,5 +1,6 @@
 package bmstu.iu9.tfl.lab3;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -18,15 +19,21 @@ public class CheckCFGForRegularityApp {
             Set<String> regularNonterms = new HashSet<>();
             Set<String> probablyRegularNonterms = new HashSet<>();
             Set<String> suspiciousNonterms = new HashSet<>();
+            String dirPath = "./derives";
+            createDirectoryForDerivations(dirPath);
             for (NontermLeftmostDerivationTree nontermLeftmostDerivationTree : leftmostDerivationsOfNontermsAchievableFromStartingNonterm.values()) {
-                nontermLeftmostDerivationTree.function(
+                nontermLeftmostDerivationTree.categorizeNonterm(
                         leftmostDerivationsOfNontermsAchievableFromStartingNonterm,
                         rules.getRegularNontermsSubsets(),
                         regularNonterms,
                         probablyRegularNonterms,
                         suspiciousNonterms
                 );
+                if (nontermLeftmostDerivationTree.checkRecursionInDerivationFound() && rules.checkNontermIsNotRegular(nontermLeftmostDerivationTree.getNonterm())) {
+                    renderNontermDerivationDigraph(nontermLeftmostDerivationTree, dirPath);
+                }
             }
+
             if (suspiciousNonterms.isEmpty()) {
                 probablyRegularNontermsSetClosure(probablyRegularNonterms, regularNonterms, rules);
                 printNontermSets(probablyRegularNonterms, regularNonterms, suspiciousNonterms);
@@ -39,14 +46,44 @@ public class CheckCFGForRegularityApp {
                 }
             } else {
                 printNontermSets(probablyRegularNonterms, regularNonterms, suspiciousNonterms);
-//                for (String suspiciousNonterm : suspiciousNonterms) {
-//                    generateDigraph(); //TODO: implement method (graphviz)
-//                }
+                System.out.println("Language is not regular");
             }
-        } catch (IOException | Error e) {
+        } catch (Error | Exception e) {
             System.err.println(e.getMessage());
             System.exit(-1);
         }
+    }
+
+    private static void createDirectoryForDerivations(String path) throws Exception {
+        File dir = new File(path);
+        if (dir.exists()) {
+            if (!deleteDirectory(dir)) {
+                throw new Exception("Error with deleting the directory");
+            }
+        }
+        if (!dir.mkdirs()) {
+            throw new Exception("Directory was not created");
+        }
+    }
+
+    private static boolean deleteDirectory(File directoryToBeDeleted) {
+        File[] allContents = directoryToBeDeleted.listFiles();
+        if (allContents != null) {
+            for (File file : allContents) {
+                deleteDirectory(file);
+            }
+        }
+        return directoryToBeDeleted.delete();
+    }
+
+    private static void renderNontermDerivationDigraph(NontermLeftmostDerivationTree nontermLeftmostDerivationTree, String dirPath) throws IOException {
+        String graph = nontermLeftmostDerivationTree.getGraphvizRepresentation();
+        System.out.println(graph);
+        String command = "echo '" + graph +
+                "' | dot -Tsvg >" +
+                dirPath + "/" + nontermLeftmostDerivationTree.getNonterm() + ".svg";
+        Runtime rt = Runtime.getRuntime();
+        rt.exec(command);
     }
 
     private static void probablyRegularNontermsSetClosure(Set<String> probablyRegularNonterms, Set<String> regularNonterms, Grammar rules) {

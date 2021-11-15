@@ -54,7 +54,6 @@ public class Grammar extends Reader {
             }
         }
 
-
         if (nontermsUsed.contains(STARTING_NONTERM_REGEX)) {
             throw new Error("Starting terminal S appeared on the right side of a rule");
         } else if (!rules.containsKey(STARTING_NONTERM_REGEX)) {
@@ -149,5 +148,9 @@ public class Grammar extends Reader {
 
     protected Set<String> getNontermFirstLevelDependency(String nonterm) {
         return rules.get(nonterm).getFirstLevelDependency();
+    }
+
+    protected boolean checkNontermIsNotRegular(String nonterm) {
+        return notRegularNonterms.contains(nonterm);
     }
 }
