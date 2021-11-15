@@ -1,7 +1,6 @@
 package bmstu.iu9.tfl.lab3;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class TreeNode {
     private static final int TERM_STARTING_INDEX = 0;
@@ -16,8 +15,9 @@ public class TreeNode {
     private final boolean        isEndOfDerivation;
     private boolean              rootNontermFound;
     private int                  indexOfRootNontermInLeftNodeList;
-    private List<String>         nontermsAndTermsSuffixOfRootNontermDerivationTree;
-    private StringBuilder        graphvizRepresentation;
+    private List<String>         suffixOfRootNontermDerivationTree;
+    private StringBuilder  prefixOfRootNontermDerivationTree;
+    private final StringBuilder  graphvizRepresentation;
 
 
     public TreeNode(String nonterm, Grammar rules, String rootNonterm, boolean rootNontermFound, Set<String> stackNontermsTrace) {
@@ -28,6 +28,9 @@ public class TreeNode {
         words = new HashSet<>();
         isEndOfDerivation = false;
         this.rootNontermFound = rootNontermFound;
+
+        prefixOfRootNontermDerivationTree = new StringBuilder();
+        graphvizRepresentation = new StringBuilder();
 
         List<String[]> rewritingVariants = rules.getNontermRewritingVariants(nonterm);
         for (String[] rewritingVariant : rewritingVariants) {
@@ -47,6 +50,8 @@ public class TreeNode {
         isNonterm = isEndOfDerivation;
         nodeExpr = termsString;
         this.isEndOfDerivation = isEndOfDerivation;
+        prefixOfRootNontermDerivationTree = new StringBuilder();
+        graphvizRepresentation = new StringBuilder();
     }
 
     private void iterLeftmostDerivation(Grammar rules, String rootNonterm, Set<String> stackNontermsTrace, Set<Integer> endedDerivation) {
@@ -137,53 +142,62 @@ public class TreeNode {
     }
 
 
-    protected String buildLeftMostDerivationToRootNonterm() {
+    protected int buildLeftMostDerivationToRootNonterm(int i) {
+        int j = i + 1;
         if (isNonterm) {
             if (isEndOfDerivation) {
-                graphvizRepresentation = new StringBuilder();
-                return "";
+                return j;
             }
             StringBuilder prefix = new StringBuilder();
             if (rootNontermFound) {
                 for (TreeNode prefixNode : leftNode.get(indexOfRootNontermInLeftNodeList)) {
-                    prefix.append(prefixNode.buildLeftMostDerivationToRootNonterm());
-                    buildRelationshipBtwTwoNodesInGraphvizRepresentation(prefixNode.nodeExpr);
+                    int k = j;
+                    j = prefixNode.buildLeftMostDerivationToRootNonterm(j);
+                    prefix.append(prefixNode.prefixOfRootNontermDerivationTree);
+                    buildRelationshipBtwTwoNodesInGraphvizRepresentation(prefixNode.nodeExpr, i, k);
                     appendNodeToGraphvizRepresentation(prefixNode);
                 }
                 List<TreeNode> derivation = leftNode.get(indexOfRootNontermInLeftNodeList);
-                if (derivation.get(derivation.size() - 1).isEndOfDerivation) {
-                    List<String> suffix = rightNode.get(indexOfRootNontermInLeftNodeList);
-                    nontermsAndTermsSuffixOfRootNontermDerivationTree = new ArrayList<>(suffix);
 
-                    buildRelationshipBtwTwoNodesInGraphvizRepresentation(derivation.get(derivation.size() - 1).nodeExpr);
-                    buildRelationshipBtwTwoNodesInGraphvizRepresentation(String.join("", suffix));
+                List<String> suffix = rightNode.get(indexOfRootNontermInLeftNodeList);
+                if (derivation.get(derivation.size() - 1).isEndOfDerivation) {
+                    suffixOfRootNontermDerivationTree = new ArrayList<>(suffix);
                 } else {
-                    nontermsAndTermsSuffixOfRootNontermDerivationTree = new ArrayList<>(derivation.get(derivation.size() - 1).nontermsAndTermsSuffixOfRootNontermDerivationTree);
-                    nontermsAndTermsSuffixOfRootNontermDerivationTree.addAll(rightNode.get(indexOfRootNontermInLeftNodeList));
+                    suffixOfRootNontermDerivationTree = new ArrayList<>(derivation.get(derivation.size() - 1).suffixOfRootNontermDerivationTree);
+                    suffixOfRootNontermDerivationTree.addAll(suffix);
+                }
+                if (!suffix.isEmpty()) {
+                    buildRelationshipBtwTwoNodesInGraphvizRepresentation(String.join("", suffix), i, j++);
                 }
             } else {
                 for (TreeNode prefixNode : leftNode.get(0)) {
-                    prefix.append(prefixNode.buildLeftMostDerivationToRootNonterm());
-                    buildRelationshipBtwTwoNodesInGraphvizRepresentation(prefixNode.nodeExpr);
+                    int k = j;
+                    j = prefixNode.buildLeftMostDerivationToRootNonterm(j);
+                    prefix.append(prefixNode.prefixOfRootNontermDerivationTree);
+                    buildRelationshipBtwTwoNodesInGraphvizRepresentation(prefixNode.nodeExpr, i, k);
                     appendNodeToGraphvizRepresentation(prefixNode);
                 }
             }
-            return prefix.toString();
+            prefixOfRootNontermDerivationTree = prefix;
+            return j;
         }
-        graphvizRepresentation = new StringBuilder();
-        return nodeExpr;
+        return j;
     }
 
-    private void buildRelationshipBtwTwoNodesInGraphvizRepresentation(String node) {
-        graphvizRepresentation.append(nodeExpr).append(" -> ").append(node).append(";\n");
+    private void buildRelationshipBtwTwoNodesInGraphvizRepresentation(String node, int i, int j) {
+        graphvizRepresentation.append("{").append(i).append("[label = \"").append(nodeExpr).append("\"]} -> {").append(j).append("[label = \"").append(node).append("\"]};\n");
     }
 
     private void appendNodeToGraphvizRepresentation(TreeNode prefixNode) {
-        graphvizRepresentation.append(prefixNode.graphvizRepresentation);
+        graphvizRepresentation.append(prefixNode.graphvizRepresentation.toString());
     }
 
-    protected List<String> getNontermsAndTermsSuffixOfRootNontermDerivationTree() {
-        return nontermsAndTermsSuffixOfRootNontermDerivationTree;
+    protected List<String> getSuffixOfRootNontermDerivationTree() {
+        return suffixOfRootNontermDerivationTree;
+    }
+
+    protected String getPrefixOfRootNontermDerivationTree() {
+        return prefixOfRootNontermDerivationTree.toString();
     }
 
     protected Set<StringBuilder> getWords() {

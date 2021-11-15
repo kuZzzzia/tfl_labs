@@ -20,13 +20,14 @@ public class NontermLeftmostDerivationTree {
             Set<String> probablyRegularNonterms,
             Set<String> suspiciousNonterms) {
         if (!node.checkRootNontermFound()) {
-            probablyRegularNonterms.add(node.getNodeExpr());
+            regularNonterms.add(node.getNodeExpr());
             return;
         }
-        String prefix = node.buildLeftMostDerivationToRootNonterm();
-        List<String> suffix = node.getNontermsAndTermsSuffixOfRootNontermDerivationTree();
+        node.buildLeftMostDerivationToRootNonterm(0);
+        String prefix = node.getPrefixOfRootNontermDerivationTree();
+        List<String> suffix = node.getSuffixOfRootNontermDerivationTree();
         if (suffix.isEmpty()) {
-            probablyRegularNonterms.add(node.getNodeExpr());
+            regularNonterms.add(node.getNodeExpr());
             return;
         }
         String regularSubsetKey = checkRegularSubsetContainsSuffix(suffix, regularNontermsSubsets);
@@ -102,7 +103,7 @@ public class NontermLeftmostDerivationTree {
     }
 
     protected String getGraphvizRepresentation() {
-        return "digraph {"
+        return "digraph {\n"
                 + node.getGraphvizRepresentation()
                 + "}";
     }

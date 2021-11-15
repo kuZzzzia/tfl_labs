@@ -2,6 +2,10 @@ package bmstu.iu9.tfl.lab3;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class CheckCFGForRegularityApp {
@@ -49,7 +53,7 @@ public class CheckCFGForRegularityApp {
                 System.out.println("Language is not regular");
             }
         } catch (Error | Exception e) {
-            System.err.println(e.getMessage());
+            System.err.println(e);
             System.exit(-1);
         }
     }
@@ -79,9 +83,10 @@ public class CheckCFGForRegularityApp {
     private static void renderNontermDerivationDigraph(NontermLeftmostDerivationTree nontermLeftmostDerivationTree, String dirPath) throws IOException {
         String graph = nontermLeftmostDerivationTree.getGraphvizRepresentation();
         System.out.println(graph);
-        String command = "echo '" + graph +
-                "' | dot -Tsvg >" +
-                dirPath + "/" + nontermLeftmostDerivationTree.getNonterm() + ".svg";
+        String fileName = dirPath + "/" + nontermLeftmostDerivationTree.getNonterm();
+        Path dotFile = Paths.get(fileName + ".dot");
+        Files.write(dotFile, Collections.singleton(graph), StandardCharsets.UTF_8);
+        String command = "dot -Tsvg " + fileName + ".dot" + " -o" + fileName + ".svg";
         Runtime rt = Runtime.getRuntime();
         rt.exec(command);
     }
