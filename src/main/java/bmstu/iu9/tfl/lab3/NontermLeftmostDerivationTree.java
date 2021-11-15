@@ -77,24 +77,20 @@ public class NontermLeftmostDerivationTree {
     }
 
     private boolean checkWordPrefixCanBeRecognisedByRule(Map<String, NontermLeftmostDerivationTree> leftmostDerivations, StringBuilder word, List<String> suffix, int i) {
-        if (suffix.size() == i) {
-            return true;
-        }
-
         String pattern = suffix.get(i);
         if (pattern.matches(RuleRightSide.NONTERM_REGEX)) {
             if (word.length() == 0) {
                 return false;
             }
-            for (StringBuilder prefix : leftmostDerivations.get(pattern).node.getWords()) { //TODO : problem
+            for (StringBuilder prefix : leftmostDerivations.get(pattern).node.getWords()) {
                 StringBuilder wordCopy = new StringBuilder(word.toString());
-                if (checkWordPrefixCanBeRecognisedByRule(leftmostDerivations, wordCopy, suffix, i + 1)) {
+                if (checkWordStartsWithPattern(wordCopy, prefix.toString()) && (i + 1 == suffix.size() || checkWordPrefixCanBeRecognisedByRule(leftmostDerivations, wordCopy, suffix, i + 1))) {
                     return true;
                 }
             }
             return false;
         }
-        return checkWordStartsWithPattern(word, pattern) && checkWordPrefixCanBeRecognisedByRule(leftmostDerivations, word, suffix, i + 1);
+        return checkWordStartsWithPattern(word, pattern) && (i + 1 == suffix.size() || checkWordPrefixCanBeRecognisedByRule(leftmostDerivations, word, suffix, i + 1));
     }
 
     private boolean checkWordStartsWithPattern(StringBuilder word, String pattern) {
