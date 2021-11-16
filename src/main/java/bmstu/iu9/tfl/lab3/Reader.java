@@ -5,6 +5,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 public class Reader {
+    private static final String FILE_NOT_FOUND_ERROR = "File wasn't found";
+    private static final String EMPTY_FILE_ERROR = "Empty file";
+
     private String[] data;
 
     protected Reader(String path) throws IOException {
@@ -15,7 +18,7 @@ public class Reader {
     private void readFromFile(String path) throws IOException {
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream(path);
         if (inputStream == null) {
-            throw new Error("File wasn't found");
+            throw new Error(FILE_NOT_FOUND_ERROR);
         }
         InputStreamReader streamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
         BufferedReader reader = new BufferedReader(streamReader);
@@ -40,7 +43,7 @@ public class Reader {
 
     private void set(String[] data) {
         if (data.length == 0) {
-            throw new Error("Empty file");
+            throw new Error(EMPTY_FILE_ERROR);
         }
         this.data = new String[data.length];
         System.arraycopy(data, 0, this.data, 0, data.length);
