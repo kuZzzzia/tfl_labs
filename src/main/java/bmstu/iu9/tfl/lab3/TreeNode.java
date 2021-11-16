@@ -22,7 +22,8 @@ public class TreeNode {
     private final StringBuilder graphvizRepresentation;
 
 
-    public TreeNode(String nonterm, Grammar rules, String rootNonterm, boolean rootNontermFound, Set<String> stackNontermsTrace) {
+    public TreeNode(String nonterm, Grammar rules, String rootNonterm,
+                    boolean rootNontermFound, Set<String> stackNontermsTrace) {
         isNonterm = true;
         nodeExpr = nonterm;
         leftNode = new ArrayList<>();
@@ -56,7 +57,8 @@ public class TreeNode {
         graphvizRepresentation = new StringBuilder();
     }
 
-    private void iterLeftmostDerivation(Grammar rules, String rootNonterm, Set<String> stackNontermsTrace, Set<Integer> endedDerivation) {
+    private void iterLeftmostDerivation(Grammar rules, String rootNonterm,
+                                        Set<String> stackNontermsTrace, Set<Integer> endedDerivation) {
         List<Integer> recursiveDerivation = new ArrayList<>();
         for (int i = 0; i < rightNode.size(); i++) {
             if (!rootNontermFound || i != indexOfDerivationWithRootNonterm) {
@@ -79,7 +81,8 @@ public class TreeNode {
                         } else {
                             Set<String> newStackNontermsTrace = new HashSet<>(stackNontermsTrace);
                             newStackNontermsTrace.add(expr);
-                            TreeNode newNode = new TreeNode(expr, rules, rootNonterm, false, newStackNontermsTrace);
+                            TreeNode newNode = new TreeNode(expr, rules, rootNonterm,
+                                    false, newStackNontermsTrace);
                             if (newNode.leftNode.isEmpty()) {
                                 recursiveDerivation.add(INDEX_FOR_LIFO, i);
                             } else {
@@ -166,7 +169,9 @@ public class TreeNode {
                 if (derivation.get(derivation.size() - 1).isEndOfDerivation) {
                     suffixOfRootNontermDerivationTree = new ArrayList<>(suffix);
                 } else {
-                    suffixOfRootNontermDerivationTree = new ArrayList<>(derivation.get(derivation.size() - 1).suffixOfRootNontermDerivationTree);
+                    suffixOfRootNontermDerivationTree = new ArrayList<>(
+                            derivation.get(derivation.size() - 1).suffixOfRootNontermDerivationTree
+                    );
                     suffixOfRootNontermDerivationTree.addAll(suffix);
                 }
                 if (!suffix.isEmpty()) {

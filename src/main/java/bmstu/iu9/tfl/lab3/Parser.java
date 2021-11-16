@@ -18,7 +18,8 @@ public class Parser {
                 .toArray(new String[0]);
     }
 
-    private List<String> splitRuleRightSideIntoArrayOfNontermsAndTerms(final String ruleRightSideString, Set<String> nontermsUsed) {
+    private List<String> splitRuleRightSideIntoArrayOfNontermsAndTerms(final String ruleRightSideString,
+                                                                       Set<String> nontermsUsed) {
         List<String> ruleRightSideTermsAndNonterms = new ArrayList<>();
         StringBuilder ruleRightSide = new StringBuilder(ruleRightSideString);
 
@@ -33,7 +34,8 @@ public class Parser {
         return ruleRightSideTermsAndNonterms;
     }
 
-    private void parseTermOrNonterm(StringBuilder rule, List<String> ruleRightSideTermsAndNonterms, Set<String> nontermsUsed) {
+    private void parseTermOrNonterm(StringBuilder rule, List<String> ruleRightSideTermsAndNonterms,
+                                    Set<String> nontermsUsed) {
         if (getCharAsString(rule, STARTING_CHAR_INDEX).matches(NONTERM_CHAR_REGEX)) {
             String nonterm = parse(rule, DIGIT_REGEX);
             ruleRightSideTermsAndNonterms.add(nonterm);
