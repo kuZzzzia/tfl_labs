@@ -10,8 +10,13 @@ public class Grammar extends Reader {
     private static final String EMPTY_STRING = "";
     private static final String RULE_SEPARATOR = "->";
     private static final String STARTING_NONTERM_REGEX = "S";
+    private static final String RULE_DECLARATION_ERROR = "Invalid rule declaration: ";
+    private static final String STARTING_NONTERM_ON_RIGHT_SIDE_ERROR = "Starting nonterm S appeared on the right side of a rule";
+    private static final String NO_STARTING_NONTERM_RULE_ERROR = "No rule for starting terminal S found";
+    private static final String RULES_AMOUNT_ERROR = "Incorrect amount of rules";
     private static final int    RULE_SEPARATOR_LENGTH = 2;
     private static final int    STARTING_CHAR_INDEX = 0;
+    private static final int    REGULAR_RULE_MAX_LENGTH = 2;
 
 
     private final Map<String, RuleRightSide>    rules;
@@ -32,7 +37,7 @@ public class Grammar extends Reader {
     private void parseRules(String[] data) {
         for (String line : data) {
             if (!line.matches(RULE_REGEX)) {
-                throw new Error("Invalid rule declaration: " + line);
+                throw new Error(RULE_DECLARATION_ERROR + line);
             }
             line = line.replaceAll(WHITESPACE_REGEX, EMPTY_STRING);
             int indexOfRuleSeparator = line.indexOf(RULE_SEPARATOR);
@@ -41,7 +46,7 @@ public class Grammar extends Reader {
 
             String[] newRightSide = new Parser(ruleRightSideString, nontermsUsed).getParsedRuleRightSide();
 
-            if (newRightSide.length > 2) {
+            if (newRightSide.length > REGULAR_RULE_MAX_LENGTH) {
                 notRegularNonterms.add(ruleLeftSide);
             }
 
@@ -55,11 +60,11 @@ public class Grammar extends Reader {
         }
 
         if (nontermsUsed.contains(STARTING_NONTERM_REGEX)) {
-            throw new Error("Starting terminal S appeared on the right side of a rule");
+            throw new Error(STARTING_NONTERM_ON_RIGHT_SIDE_ERROR);
         } else if (!rules.containsKey(STARTING_NONTERM_REGEX)) {
-            throw new Error("No rule for starting terminal S found");
+            throw new Error(NO_STARTING_NONTERM_RULE_ERROR);
         } else if (nontermsUsed.size() != rules.size() - 1) {
-            throw new Error("Incorrect amount of rules");
+            throw new Error(RULES_AMOUNT_ERROR);
         }
     }
 
@@ -95,6 +100,10 @@ public class Grammar extends Reader {
             }
         }
         Set<String> regularNonterms = new HashSet<>(regularNontermsSubsets.keySet());
+
+        for (String nonterm : regularNonterms) {
+            regularNontermsSubsets.get(nonterm).add(nonterm);
+        }
 
         for (String nonterm1 : regularNonterms) {
             if (regularNontermsSubsets.containsKey(nonterm1)) {
