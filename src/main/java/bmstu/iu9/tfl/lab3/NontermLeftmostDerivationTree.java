@@ -19,14 +19,22 @@ public class NontermLeftmostDerivationTree {
             Set<String> probablyRegularNonterms,
             Set<String> suspiciousNonterms) {
         if (!node.checkRootNontermFound()) {
-            regularNonterms.add(node.getNodeExpr());
+            if (node.checkNodeIsFinite()) {
+                regularNonterms.add(node.getNodeExpr());
+            } else {
+                probablyRegularNonterms.add(node.getNodeExpr());
+            }
             return;
         }
         node.buildLeftMostDerivationToRootNonterm(0);
         String prefix = node.getPrefixOfRootNontermDerivationTree();
         List<String> suffix = node.getSuffixOfRootNontermDerivationTree();
         if (suffix.isEmpty()) {
-            regularNonterms.add(node.getNodeExpr());
+            if (node.checkNodeIsFinite()) {
+                regularNonterms.add(node.getNodeExpr());
+            } else {
+                probablyRegularNonterms.add(node.getNodeExpr());
+            }
             return;
         }
         String regularSubsetKey = checkRegularSubsetContainsSuffix(suffix, regularNontermsSubsets);

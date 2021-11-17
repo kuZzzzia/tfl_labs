@@ -8,11 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-//TODO: add more tests
 
-//TODO: task 1 connected to theory (0 task for me)
-
-//TODO: (optional) add key to specify path of graphviz representation
 
 public class CheckCFGForRegularityApp {
     private static final String DIRECTORY_PATH_FOR_GRAPHVIZ_REPRESENTATION_OF_DERIVATIONS = "./derives";

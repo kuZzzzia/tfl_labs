@@ -232,4 +232,8 @@ public class TreeNode {
     protected String getGraphvizRepresentation() {
         return graphvizRepresentation.toString();
     }
+
+    protected boolean checkNodeIsFinite() {
+        return !shortestWords.isEmpty();
+    }
 }
