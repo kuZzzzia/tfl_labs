@@ -130,7 +130,7 @@ public class CheckCFGForRegularityApp {
                                                                          Grammar rules) {
         Set<String> nontermFirstLevelDependency = rules.getNontermFirstLevelDependency(nonterm);
         for (String dependNonterm : nontermFirstLevelDependency) {
-            if (!regularNonterms.contains(dependNonterm)) {
+            if (!dependNonterm.equals(nonterm) && !regularNonterms.contains(dependNonterm)) {
                 return false;
             }
         }
