@@ -1,0 +1,7 @@
+S -> aQ
+Q -> wBQwrR
+B -> rt
+B -> yhE
+E -> a
+R -> t
+
