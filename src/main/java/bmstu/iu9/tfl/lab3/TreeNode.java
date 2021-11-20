@@ -12,6 +12,7 @@ public class TreeNode {
     private final boolean           isNonterm;
     private List<List<TreeNode>>    leftNode;
     private List<List<String>>      rightNode;
+    private List<Boolean>           isEnded;
     private Set<StringBuilder>      shortestWords;
 
     private final boolean       isEndOfDerivation;
@@ -28,6 +29,7 @@ public class TreeNode {
         nodeExpr = nonterm;
         leftNode = new ArrayList<>();
         rightNode = new ArrayList<>();
+        isEnded = new ArrayList<>();
         shortestWords = new HashSet<>();
         isEndOfDerivation = false;
         this.rootNontermFound = rootNontermFound;
@@ -40,11 +42,11 @@ public class TreeNode {
             for (String[] rewritingVariant : rewritingVariants) {
                 leftNode.add(new ArrayList<>());
                 rightNode.add(new ArrayList<>(Arrays.asList(rewritingVariant)));
+                isEnded.add(false);
             }
 
-            Set<Integer> endedDerivation = new HashSet<>();
-            while (endedDerivation.size() != leftNode.size()) {
-                iterLeftmostDerivation(rules, rootNonterm, stackNontermsTrace, endedDerivation);
+            while (checkNotEndedDerivationsExists()) {
+                iterLeftmostDerivation(rules, rootNonterm, stackNontermsTrace);
             }
         }
     }
@@ -58,24 +60,24 @@ public class TreeNode {
     }
 
     private void iterLeftmostDerivation(Grammar rules, String rootNonterm,
-                                        Set<String> stackNontermsTrace, Set<Integer> endedDerivation) {
+                                        Set<String> stackNontermsTrace) {
         List<Integer> recursiveDerivation = new ArrayList<>();
         for (int i = 0; i < rightNode.size(); i++) {
-            if (!rootNontermFound || i != indexOfDerivationWithRootNonterm) {
+            if (!isEnded.get(i) && (!rootNontermFound || i != indexOfDerivationWithRootNonterm)) {
                 List<String> rightNodeVariant = rightNode.get(i);
                 if (rightNodeVariant.isEmpty()) {
                     Set<StringBuilder> derivationToTermsString = buildShortestDerivationToTermsString(leftNode.get(i));
                     if (derivationToTermsString != null) {
                         shortestWords.addAll(derivationToTermsString);
                     }
-                    endedDerivation.add(i);
+                    isEnded.set(i, true);
                 } else {
                     String expr = rightNodeVariant.get(INDEX_OF_FIRST_EXPR_IN_RIGHT_NODE);
                     if (expr.matches(RuleRightSide.NONTERM_REGEX)) {
                         if (stackNontermsTrace.contains(expr)) {
                             recursiveDerivation.add(INDEX_FOR_LIFO, i);
                         } else if (!rootNontermFound && expr.equals(rootNonterm)) {
-                            setRootNontermFound(i, endedDerivation);
+                            setRootNontermFound(i);
                             stackNontermsTrace.add(rootNonterm);
                             leftNode.get(i).add(new TreeNode(rootNonterm, true));
                         } else {
@@ -87,7 +89,7 @@ public class TreeNode {
                                 recursiveDerivation.add(INDEX_FOR_LIFO, i);
                             } else {
                                 if (newNode.rootNontermFound) {
-                                    setRootNontermFound(i, endedDerivation);
+                                    setRootNontermFound(i);
                                 }
                                 leftNode.get(i).add(newNode);
                             }
@@ -105,7 +107,17 @@ public class TreeNode {
             }
             leftNode.remove(noRootNontermFoundIndex);
             rightNode.remove(noRootNontermFoundIndex);
+            isEnded.remove(noRootNontermFoundIndex);
         }
+    }
+
+    private boolean checkNotEndedDerivationsExists() {
+        for (boolean status : isEnded) {
+            if (!status) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Set<StringBuilder> buildShortestDerivationToTermsString(List<TreeNode> leftmostDerivationTree) {
@@ -137,10 +149,10 @@ public class TreeNode {
         return words;
     }
 
-    private void setRootNontermFound(int i, Set<Integer> endedDerivation) {
+    private void setRootNontermFound(int i) {
         rootNontermFound = true;
         indexOfDerivationWithRootNonterm = i;
-        endedDerivation.add(i);
+        isEnded.set(i, true);
     }
 
     protected boolean checkRootNontermFound() {

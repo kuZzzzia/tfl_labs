@@ -1,9 +1,6 @@
 package bmstu.iu9.tfl.lab3;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class NontermLeftmostDerivationTree {
     private final TreeNode node;
@@ -19,7 +16,7 @@ public class NontermLeftmostDerivationTree {
             Set<String> probablyRegularNonterms,
             Set<String> suspiciousNonterms) {
         if (!node.checkRootNontermFound()) {
-            if (node.checkNodeIsFinite()) {
+            if (node.checkNodeIsFinite() && checkRegularSubsetContainsSuffix(new ArrayList<>(Collections.singleton(node.getNodeExpr())), regularNontermsSubsets) != null) {
                 regularNonterms.add(node.getNodeExpr());
             } else {
                 probablyRegularNonterms.add(node.getNodeExpr());
