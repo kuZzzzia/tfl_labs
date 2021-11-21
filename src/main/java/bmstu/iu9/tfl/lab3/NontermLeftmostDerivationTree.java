@@ -35,8 +35,7 @@ public class NontermLeftmostDerivationTree {
             return;
         }
         String regularSubsetKey = checkRegularSubsetContainsSuffix(suffix, regularNontermsSubsets);
-        if ( regularSubsetKey != null
-                && checkWordBelongsToSuffixIterLanguage(leftmostDerivations, new StringBuilder(prefix), suffix)) {
+        if (checkWordBelongsToSuffixIterLanguage(leftmostDerivations, new StringBuilder(prefix), suffix)) {
             Set<StringBuilder> words = node.getShortestWords();
             if (words.isEmpty()) {
                 suspiciousNonterms.add(node.getNodeExpr());
@@ -51,7 +50,8 @@ public class NontermLeftmostDerivationTree {
                     }
                 }
             }
-            if (checkRegularSubsetContainsRootNonterm(regularNontermsSubsets.get(regularSubsetKey))) {
+            if (regularSubsetKey != null
+                    && checkRegularSubsetContainsRootNonterm(regularNontermsSubsets.get(regularSubsetKey))) {
                 regularNonterms.add(node.getNodeExpr());
             } else {
                 probablyRegularNonterms.add(node.getNodeExpr());
