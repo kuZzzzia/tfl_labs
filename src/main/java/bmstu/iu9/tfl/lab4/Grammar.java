@@ -4,10 +4,9 @@ import java.io.IOException;
 import java.util.*;
 
 public class Grammar extends Reader {
-
     private enum GrammarType {
-        LEFT_LINEAR,
         RIGHT_LINEAR,
+        LEFT_LINEAR
     }
 
     private static final String RULE_REGEX = "\\[[A-Za-z]+\\]\\s*::=\\s*(([a-z0-9_*+=()$;:]|(\\[[A-Za-z]+\\]))\\s*)+";
@@ -23,7 +22,10 @@ public class Grammar extends Reader {
 
     private final Map<String, List<List<String>>> rules;
     private final Set<String> nontermsUsed;
-    private final Map<GrammarType, Set<String>> regularNonterms;
+
+    private Set<String> rightLinearRegularNonterms;
+    private Set<String> leftLinearRegularNonterms;
+    private Set<String> regularClosureNonterms;
 
 
     protected Grammar(String path) throws IOException {
@@ -31,9 +33,6 @@ public class Grammar extends Reader {
 
         rules = new HashMap<>();
         nontermsUsed = new HashSet<>();
-        regularNonterms = new HashMap<>();
-        regularNonterms.put(GrammarType.LEFT_LINEAR, new HashSet<>());
-        regularNonterms.put(GrammarType.RIGHT_LINEAR, new HashSet<>());
 
         parseRules(super.getData());
         buildRegularSubsets();
@@ -48,18 +47,75 @@ public class Grammar extends Reader {
                 buildNontermDependency(nonterm, dependency, stackTrace);
             }
         }
-
+        leftLinearRegularNonterms = getRegularNonterms(GrammarType.LEFT_LINEAR, dependency);
+        rightLinearRegularNonterms = getRegularNonterms(GrammarType.RIGHT_LINEAR, dependency);
+        buildRegularGrammarsClosure(dependency);
     }
 
-    private Set<String> findIrregularNonterms(GrammarType grammarType) {
-        Set<String> irregular = new HashSet<>();
+    private void buildRegularGrammarsClosure(final Map<String, Set<String>> dependency) {
+        regularClosureNonterms = new HashSet<>();
+
+        boolean changed = false;
+        while (true) {
+            for (String nonterm : rules.keySet()) {
+                if (checkNontermIsNotRegularYet(nonterm)) {
+                    boolean regular = true;
+                    for (String rewritingNonterm : dependency.get(nonterm)) {
+                        if (checkNontermIsNotRegularYet(rewritingNonterm)) {
+                            regular = false;
+                        }
+                    }
+                    if (regular) {
+                        regularClosureNonterms.add(nonterm);
+                        changed = true;
+                    }
+                }
+            }
+            if (!changed) {
+                return;
+            }
+        }
+    }
+
+    private boolean checkNontermIsNotRegularYet(String nonterm) {
+        return !leftLinearRegularNonterms.contains(nonterm)
+                && !rightLinearRegularNonterms.contains(nonterm)
+                && !regularClosureNonterms.contains(nonterm);
+    }
+
+    private Set<String> getRegularNonterms(final GrammarType grammarType, final Map<String, Set<String>> dependency) {
+        Set<String> regularNonterms = new HashSet<>();
+        Set<String> notRegularNonterms = findNotRegularNonterms(grammarType, dependency);
+        for (String nonterm : rules.keySet()) {
+            if (!notRegularNonterms.contains(nonterm)) {
+                regularNonterms.add(nonterm);
+            }
+        }
+        return  regularNonterms;
+    }
+
+    private Set<String> findNotRegularNonterms(final GrammarType grammarType, final Map<String, Set<String>> dependency) {
+        Set<String> notRegularNonterms = new HashSet<>();
+        Queue<String> newNotRegularNonterms = new PriorityQueue<>(rules.size());
         for (String nonterm : rules.keySet()) {
             for (List<String> rewritingRule : rules.get(nonterm)) {
                 if (isNotChainRule(rewritingRule) && isNotRegular(grammarType, rewritingRule)) {
-
+                    newNotRegularNonterms.add(nonterm);
                 }
             }
         }
+
+        while (!newNotRegularNonterms.isEmpty()) {
+            String notRegularNonterm = newNotRegularNonterms.poll();
+            for (String nonterm: rules.keySet()) {
+                if (!notRegularNonterms.contains(nonterm) && !newNotRegularNonterms.contains(nonterm) && dependency.get(nonterm).contains(notRegularNonterm)) {
+                    newNotRegularNonterms.add(nonterm);
+                }
+            }
+            notRegularNonterms.add(notRegularNonterm);
+        }
+
+        return notRegularNonterms;
     }
 
     private void buildNontermDependency(String nonterm, Map<String, Set<String>> dependency, Set<String> stackTrace) {
