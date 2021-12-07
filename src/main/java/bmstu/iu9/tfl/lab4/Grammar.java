@@ -36,7 +36,32 @@ public class Grammar extends Reader {
 
         parseRules(super.getData());
         buildRegularSubsets();
+        protectTerms();
+    }
 
+    private void protectTerms() {
+        Map<String, String> protectedTerms = new HashMap<>();
+        for (String nonterm : rules.keySet()) {
+            if (!checkNontermIsRegular(nonterm)) {
+                for (List<String> rewritingRule : rules.get(nonterm)) {
+                    for (int i = 0; i < rewritingRule.size(); i++) {
+                        String term = rewritingRule.get(i);
+                        if (isTerm(term)) {
+                            Optional<String> protectingNonterm = Optional.ofNullable(protectedTerms.get(term));
+                            if (protectingNonterm.isPresent()) {
+                                rewritingRule.set(i,protectingNonterm.get());
+                            } else {
+                                String newProtectingNonterm = "[$Protected$ " + term + "]";
+                                protectedTerms.put(term, newProtectingNonterm);
+                                List<List<String>> newRewritingRule = new ArrayList<>();
+                                newRewritingRule.add(new ArrayList<>(Collections.singleton(term)));
+                                rules.put(newProtectingNonterm, newRewritingRule);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private void buildRegularSubsets() {
@@ -58,10 +83,10 @@ public class Grammar extends Reader {
         boolean changed = false;
         while (true) {
             for (String nonterm : rules.keySet()) {
-                if (checkNontermIsNotRegularYet(nonterm)) {
+                if (!checkNontermIsRegular(nonterm)) {
                     boolean regular = true;
                     for (String rewritingNonterm : dependency.get(nonterm)) {
-                        if (checkNontermIsNotRegularYet(rewritingNonterm)) {
+                        if (!checkNontermIsRegular(rewritingNonterm)) {
                             regular = false;
                         }
                     }
@@ -77,10 +102,10 @@ public class Grammar extends Reader {
         }
     }
 
-    private boolean checkNontermIsNotRegularYet(String nonterm) {
-        return !leftLinearRegularNonterms.contains(nonterm)
-                && !rightLinearRegularNonterms.contains(nonterm)
-                && !regularClosureNonterms.contains(nonterm);
+    private boolean checkNontermIsRegular(String nonterm) {
+        return leftLinearRegularNonterms.contains(nonterm)
+                || rightLinearRegularNonterms.contains(nonterm)
+                || regularClosureNonterms.contains(nonterm);
     }
 
     private Set<String> getRegularNonterms(final GrammarType grammarType, final Map<String, Set<String>> dependency) {
