@@ -9,12 +9,12 @@ public class Grammar extends Reader {
         LEFT_LINEAR
     }
 
-    private static final String RULE_REGEX = "\\[[A-Za-z]+\\]\\s*::=\\s*(([a-z0-9_*+=()$;:]|(\\[[A-Za-z]+\\]))\\s*)+";
+    private static final String RULE_REGEX = "\\[[A-Za-z]+]\\s*::=\\s*(([a-z0-9_*+=()$;:]|(\\[[A-Za-z]+]))\\s*)+";
     private static final String RULE_DECLARATION_ERROR = "Invalid rule declaration: ";
     private static final String WHITESPACE_REGEX = "\\s";
     private static final String EMPTY_STRING = "";
     private static final String RULE_SEPARATOR = "::=";
-    private static final String NONTERM_REGEX = "\\[[A-Za-z]+\\]";
+    private static final String NONTERM_REGEX = "\\[[A-Za-z]+]";
     private static final String TERM_REGEX = "[a-z0-9_*+=()$;:]";
 
     private static final int    STARTING_CHAR_INDEX = 0;
