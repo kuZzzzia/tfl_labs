@@ -37,12 +37,23 @@ public class Grammar extends Reader {
         parseRules(super.getData());
         buildRegularSubsets();
         protectTerms();
+
+        System.out.println("Rules:");
+        for (String nonterm : rules.keySet()) {
+            System.out.println(nonterm + ": " + rules.get(nonterm));
+        }
+        System.out.println("Right regular: ");
+        System.out.println(rightLinearRegularNonterms);
+        System.out.println("Left regular: ");
+        System.out.println(leftLinearRegularNonterms);
+        System.out.println("Closure: ");
+        System.out.println(regularClosureNonterms);
     }
 
     private void protectTerms() {
         Map<String, String> protectedTerms = new HashMap<>();
         for (String nonterm : rules.keySet()) {
-            if (!checkNontermIsRegular(nonterm)) {
+            if (!leftLinearRegularNonterms.contains(nonterm) && !rightLinearRegularNonterms.contains(nonterm)) {
                 for (List<String> rewritingRule : rules.get(nonterm)) {
                     for (int i = 0; i < rewritingRule.size(); i++) {
                         String term = rewritingRule.get(i);
@@ -53,14 +64,20 @@ public class Grammar extends Reader {
                             } else {
                                 String newProtectingNonterm = "[$Protected$ " + term + "]";
                                 protectedTerms.put(term, newProtectingNonterm);
-                                List<List<String>> newRewritingRule = new ArrayList<>();
-                                newRewritingRule.add(new ArrayList<>(Collections.singleton(term)));
-                                rules.put(newProtectingNonterm, newRewritingRule);
+                                rewritingRule.set(i, newProtectingNonterm);
                             }
                         }
                     }
                 }
             }
+        }
+        for (String protectedTerm : protectedTerms.keySet()) {
+            String newProtectingNonterm = protectedTerms.get(protectedTerm);
+            List<List<String>> newRewritingRule = new ArrayList<>();
+            newRewritingRule.add(new ArrayList<>(Collections.singleton(protectedTerm)));
+            rules.put(newProtectingNonterm, newRewritingRule);
+            rightLinearRegularNonterms.add(newProtectingNonterm);
+            leftLinearRegularNonterms.add(newProtectingNonterm);
         }
     }
 
@@ -80,8 +97,8 @@ public class Grammar extends Reader {
     private void buildRegularGrammarsClosure(final Map<String, Set<String>> dependency) {
         regularClosureNonterms = new HashSet<>();
 
-        boolean changed = false;
         while (true) {
+            boolean changed = false;
             for (String nonterm : rules.keySet()) {
                 if (!checkNontermIsRegular(nonterm)) {
                     boolean regular = true;
@@ -148,9 +165,8 @@ public class Grammar extends Reader {
         for (List<String> rewritingRule : rules.get(nonterm)) {
             for (String term : rewritingRule) {
                 if (isNonterm(term)) {
-                    if (stackTrace.contains(term)) {
-                        nontermDependency.add(term);
-                    } else {
+                    nontermDependency.add(term);
+                    if (!stackTrace.contains(term)) {
                         if (!dependency.containsKey(term)) {
                             stackTrace.add(term);
                             buildNontermDependency(term, dependency, stackTrace);
@@ -202,7 +218,7 @@ public class Grammar extends Reader {
                 nontermsUsed.add(nonterm);
                 rewritingRule.delete(0, closingBracketIndex);
             } else {
-                parsedTerms.add(rewritingRuleString.substring(0, 1));
+                parsedTerms.add(rewritingRule.substring(0, 1));
                 rewritingRule.deleteCharAt(0);
             }
         }
