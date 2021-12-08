@@ -119,7 +119,7 @@ public class Grammar extends Reader {
         }
     }
 
-    private boolean checkNontermIsRegular(String nonterm) {
+    protected boolean checkNontermIsRegular(String nonterm) {
         return leftLinearRegularNonterms.contains(nonterm)
                 || rightLinearRegularNonterms.contains(nonterm)
                 || regularClosureNonterms.contains(nonterm);
@@ -225,11 +225,11 @@ public class Grammar extends Reader {
         return parsedTerms;
     }
 
-    private boolean isNonterm(String s) {
-        return s.matches(NONTERM_REGEX);
+    protected static boolean isNonterm(String s) {
+        return s.matches(NONTERM_REGEX) || s.startsWith("[$Protected$");
     }
 
-    private boolean isTerm(String s) {
+    protected static boolean isTerm(String s) {
         return s.matches(TERM_REGEX);
     }
 
