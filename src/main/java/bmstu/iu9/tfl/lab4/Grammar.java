@@ -248,4 +248,20 @@ public class Grammar extends Reader {
     private boolean isNotChainRule(List<String> rewritingRule) {
         return rewritingRule.size() != 1 || !isNonterm(rewritingRule.get(0));
     }
+
+    public Map<String, List<List<String>>> getRules() {
+        return rules;
+    }
+
+    public Set<String> getLeftLinearRegularNonterms() {
+        return leftLinearRegularNonterms;
+    }
+
+    public Set<String> getRightLinearRegularNonterms() {
+        return rightLinearRegularNonterms;
+    }
+
+    public Set<String> getRegularClosureNonterms() {
+        return regularClosureNonterms;
+    }
 }
