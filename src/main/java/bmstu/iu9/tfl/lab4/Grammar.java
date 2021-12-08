@@ -225,11 +225,11 @@ public class Grammar extends Reader {
         return parsedTerms;
     }
 
-    protected static boolean isNonterm(String s) {
+    public static boolean isNonterm(String s) {
         return s.matches(NONTERM_REGEX) || s.startsWith("[$Protected$");
     }
 
-    protected static boolean isTerm(String s) {
+    public static boolean isTerm(String s) {
         return s.matches(TERM_REGEX);
     }
 

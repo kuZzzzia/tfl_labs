@@ -158,7 +158,7 @@ public class Tokenizer {
         }
     }
 
-
-
-
+    public Set<String> getTokens() {
+        return tokens;
+    }
 }

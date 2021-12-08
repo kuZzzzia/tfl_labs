@@ -1,4 +1,4 @@
-package bmstu.iu9.tfl.lab4;
+package bmstu.iu9.tfl.lab2;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,9 +42,11 @@ public class Equation {
         return suffix;
     }
 
-    private static String makeCoefficient(List<String> coefficients) { //TODO: check size == 0
+    private static String makeCoefficient(List<String> coefficients) {
         if (coefficients.size() == 1) {
             return coefficients.get(0);
+        } else if (coefficients.size() == 0) {
+            return "";
         }
         return "(" + String.join("|", coefficients) + ")";
     }
