@@ -89,6 +89,8 @@ public class Equation {
     protected String getRegex() {
         if (this.regex.size() == 1) {
             return this.regex.get(0);
+        } else if (this.regex.size() == 0) {
+            return "";
         }
         return "(" + String.join("|", this.regex) + ")";
     }

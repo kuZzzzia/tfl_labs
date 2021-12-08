@@ -2,7 +2,6 @@ package bmstu.iu9.tfl.lab2;
 
 import bmstu.iu9.tfl.lab4.Grammar;
 import bmstu.iu9.tfl.lab4.Tokenizer;
-import com.sun.org.apache.bcel.internal.generic.NEW;
 
 import java.util.*;
 
@@ -115,7 +114,7 @@ public class Solver {
                 }
             }
             if (ruleRegex != null) {
-                regex = regex.equals("") ? ("(" + ruleRegex + ")") : "(" + regex + "|" + "(" + ruleRegex + "))";
+                regex = regex.equals("") ? ruleRegex.toString() : "(" + regex + ")|" + "(" + ruleRegex + ")";
             }
         }
         result.put(nonterm, regex);
