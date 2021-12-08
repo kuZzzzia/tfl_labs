@@ -2,6 +2,7 @@ package bmstu.iu9.tfl.lab2;
 
 import bmstu.iu9.tfl.lab4.Grammar;
 import bmstu.iu9.tfl.lab4.Tokenizer;
+import com.sun.org.apache.bcel.internal.generic.NEW;
 
 import java.util.*;
 
@@ -77,7 +78,7 @@ public class Solver {
                 String term = rewritingRule.get(0);
                 if (Grammar.isTerm(term)) {
                     if (!newGrammar.containsKey(NEW_STATE)) {
-                        newGrammar.put(rewritingRule.get(0), new ArrayList<>());
+                        newGrammar.put(NEW_STATE, new ArrayList<>());
                     }
                     newGrammar.get(NEW_STATE).add(Arrays.asList(term, nonterm));
                     if (nonterm.equals(root)) {
@@ -114,7 +115,7 @@ public class Solver {
                 }
             }
             if (ruleRegex != null) {
-                regex = regex.equals("") ? ("(" + ruleRegex + ")") : "(" + regex + "+" + "(" + ruleRegex + "))";
+                regex = regex.equals("") ? ("(" + ruleRegex + ")") : "(" + regex + "|" + "(" + ruleRegex + "))";
             }
         }
         result.put(nonterm, regex);
