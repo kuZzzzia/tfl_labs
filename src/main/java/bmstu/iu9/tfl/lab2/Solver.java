@@ -63,15 +63,16 @@ public class Solver {
         }
         for (List<String> rewritingRule: baseRules.get(nonterm)) {
             if (rewritingRule.size() != 1) {
+                String term = rewritingRule.get(0);
                 stackTraceVisited.add(nonterm);
-                convertLeftToRightRegular(rewritingRule.get(0), root, stackTraceVisited, baseRules, newGrammar);
+                convertLeftToRightRegular(term, root, stackTraceVisited, baseRules, newGrammar);
                 stackTraceVisited.remove(nonterm);
-                if (!newGrammar.containsKey(rewritingRule.get(0))) {
-                    newGrammar.put(rewritingRule.get(0), new ArrayList<>());
+                if (!newGrammar.containsKey(term)) {
+                    newGrammar.put(term, new ArrayList<>());
                 }
-                newGrammar.get(rewritingRule.get(0)).add(Arrays.asList(rewritingRule.get(1), nonterm));
+                newGrammar.get(term).add(Arrays.asList(rewritingRule.get(1), nonterm));
                 if (nonterm.equals(root)) {
-                    newGrammar.get(rewritingRule.get(0)).add(Collections.singletonList(rewritingRule.get(1)));
+                    newGrammar.get(term).add(Collections.singletonList(rewritingRule.get(1)));
                 }
             } else {
                 String term = rewritingRule.get(0);

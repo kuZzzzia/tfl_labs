@@ -20,11 +20,4 @@ public class AutolexApp {
         }
     }
 
-    private static void printAnswer(ArrayList<String> ans) {
-        System.out.println("Answer to system is:");
-        for (String s: ans) {
-            System.out.println(s);
-        }
-    }
-
 }
