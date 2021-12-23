@@ -1,0 +1,8 @@
+CNAME = (.)*
+NNAME = (.)+
+SEP_A = OR
+SEP_R = ->
+END_ITER = *
+BEGIN_NTERM = <
+END_NTERM = >
+BEGIN_CONST = ’
