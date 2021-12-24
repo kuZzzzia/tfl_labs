@@ -30,7 +30,7 @@ public class Reader {
         String line;
         List<String> dataLines = new ArrayList<>();
         while((line = reader.readLine()) != null) {
-            dataLines.add(line.trim());
+            dataLines.add(line);
         }
 
         set(

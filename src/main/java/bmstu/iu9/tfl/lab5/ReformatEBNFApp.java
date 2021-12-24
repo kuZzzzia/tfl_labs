@@ -8,8 +8,19 @@ public class ReformatEBNFApp {
             System.exit(-1);
         }
         try {
-            Grammar current_syntax = new Grammar(args[0]);
+            System.out.println("Current:");
+            MetaGrammar currentSyntax = new MetaGrammar(args[0]);
 
+            System.out.println("New:");
+            MetaGrammar newSyntax = new MetaGrammar(args[1]);
+
+            //        convertMetaGrammarToCNF(); TODO: eliminate epsilon rules -> if left recursion appeared then throw an error -> remove chain rules -> guard terminals
+            // apply only to current_syntax
+            //TODO: check if delimiters are tokens (lab4) ONLY WARNING!!!
+            //TODO: use ACT or CYK
+            //TODO: parse trees -> new syntax
+            // if there is a conflict in converting CNAME or NNAME then throw an error
+            // else print grammar in new syntax (all variants)
         } catch (Exception e) {
             e.printStackTrace();
         }
