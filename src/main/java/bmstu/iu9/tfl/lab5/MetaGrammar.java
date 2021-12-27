@@ -153,16 +153,25 @@ public class MetaGrammar extends Reader {
         while (updated) {
             updated = false;
             for (String nonterm : rules.keySet()) {
+                Set<List<String>> newRulesBuffer = new HashSet<>();
                 for (List<String> rewritingRule : rules.get(nonterm)) {
-                    for (int i = 0; i < rewritingRule.size(); i++) {
-                        String term = rewritingRule.get(i);
-                        if (nullable.contains(term)) {
-                            List<String> newRule = new ArrayList<>(rewritingRule);
-                            newRule.remove(i);
-                            if (!term.equals(EXP) || nonterm.equals(EXP)) {
-                                updated |= addNewRuleIfUnique(nonterm, newRule);
+                    if (rewritingRule.size() > 1) {
+                        for (int i = 0; i < rewritingRule.size(); i++) {
+                            String term = rewritingRule.get(i);
+                            if (nullable.contains(term)) {
+                                List<String> newRule = new ArrayList<>(rewritingRule);
+                                newRule.remove(i);
+                                if (!term.equals(EXP) || nonterm.equals(EXP)) {
+                                    addNewRuleIfUnique(nonterm, newRule, newRulesBuffer);
+                                }
                             }
                         }
+                    }
+                }
+                if (!newRulesBuffer.isEmpty()) {
+                    updated = true;
+                    for (List<String> newRule : newRulesBuffer) {
+                        rules.get(nonterm).add(newRule);
                     }
                 }
             }
@@ -171,7 +180,7 @@ public class MetaGrammar extends Reader {
         for (String nonterm : rules.keySet()) {
             List<List<String>> rewritingRules = rules.get(nonterm);
             for (int i = 0; i < rewritingRules.size(); i++) {
-                if (rewritingRules.get(i).get(0).equals(EMPTY_DEFAULT)) {
+                if (rewritingRules.get(i).get(0).equals(EMPTY_DEFAULT) && rewritingRules.get(i).size() == 1) {
                     if (rewritingRules.size() == 1) {
                         nontermsToDelete.add(nonterm);
                     }
@@ -181,6 +190,7 @@ public class MetaGrammar extends Reader {
         }
         while (!nontermsToDelete.isEmpty()) {
             String nontermToDelete = nontermsToDelete.poll();
+            rules.remove(nontermToDelete);
             for (String nonterm : rules.keySet()) {
                 List<List<String>> rewritingRules = rules.get(nonterm);
                 for (int i = 0; i < rewritingRules.size(); i++) {
@@ -202,14 +212,13 @@ public class MetaGrammar extends Reader {
         }
     }
 
-    private boolean addNewRuleIfUnique(String nonterm, List<String> newRule) {
+    private void addNewRuleIfUnique(String nonterm, List<String> newRule, Set<List<String>> newRulesBuffer) {
         for (List<String> rewritingRule : rules.get(nonterm)) {
             if (rewritingRule.equals(newRule)) {
-                return false;
+                return;
             }
         }
-        rules.get(nonterm).add(newRule);
-        return true;
+        newRulesBuffer.add(newRule);
     }
 
     private void findCollapsingNonterms(Set<String> nullable, Queue<String> nullableBuffer) {

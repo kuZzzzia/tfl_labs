@@ -16,6 +16,8 @@ public class ReformatEBNFApp {
 
             currentSyntax.convertGrammarToCNF();
 
+            System.out.println();
+            System.out.println("Current:");
             currentSyntax.printRules();
 
             //TODO: eliminate epsilon rules -> remove chain rules -> guard terminals
