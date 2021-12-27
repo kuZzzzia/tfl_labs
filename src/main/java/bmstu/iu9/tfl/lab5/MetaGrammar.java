@@ -137,16 +137,33 @@ public class MetaGrammar extends Reader {
                 }
             }
         }
-        printRules();
         eliminateChainRules();
-        printRules();
         protectTerms();
-        printRules();
         convertGrammarToCNF();
+        printRules();
     }
 
-    protected void convertGrammarToCNF() {
-
+    private void convertGrammarToCNF() {
+        int newNontermCount = 0;
+        Map<String, List<List<String>>> newRules = new HashMap<>();
+        Set<String> nontermsBeforeTransformation = new HashSet<>(rules.keySet());
+        for (String nonterm : nontermsBeforeTransformation) {
+            for (List<String> rewritingRule : rules.get(nonterm)) {
+                List<String> ruleTransforming = rewritingRule;
+                while (ruleTransforming.size() > 2) {
+                    String newNonterm = generateNewNonterm(nonterm, newNontermCount++);
+                    List<List<String>> newRewritingRule = new ArrayList<>();
+                    newRewritingRule.add(new ArrayList<>(ruleTransforming));
+                    newRewritingRule.get(0).remove(0);
+                    while (ruleTransforming.size() > 1) {
+                        ruleTransforming.remove(1);
+                    }
+                    ruleTransforming.add(newNonterm);
+                    rules.put(newNonterm, newRewritingRule);
+                    ruleTransforming = newRewritingRule.get(0);
+                }
+            }
+        }
     };
 
     private void protectTerms() {

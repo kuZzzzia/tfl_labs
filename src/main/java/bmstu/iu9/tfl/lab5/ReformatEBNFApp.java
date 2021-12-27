@@ -11,7 +11,7 @@ public class ReformatEBNFApp {
             System.out.println("Current:");
             MetaGrammar currentSyntax = new MetaGrammar(args[0]);
 
-            currentSyntax.convertGrammarToCNF();
+            currentSyntax.transformCurrentMeta();
 
 //            System.out.println("New:");
 //            MetaGrammar newSyntax = new MetaGrammar(args[1]);
