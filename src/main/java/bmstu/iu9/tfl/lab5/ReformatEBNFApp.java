@@ -16,6 +16,8 @@ public class ReformatEBNFApp {
 
             currentSyntax.convertGrammarToCNF();
 
+            currentSyntax.printRules();
+
             //TODO: eliminate epsilon rules -> remove chain rules -> guard terminals
             //         apply only to current_syntax
             //TODO: check if delimiters are tokens (lab4) ONLY WARNING!!!

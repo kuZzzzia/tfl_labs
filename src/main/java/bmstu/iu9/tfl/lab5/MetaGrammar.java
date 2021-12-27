@@ -119,17 +119,116 @@ public class MetaGrammar extends Reader {
 
         rules.putAll(generateGrammarFromRegex(new StringBuilder(alias.get(NNAME)), NNAME));
 
+        printRules();
+    }
+
+    protected void printRules() {
         for (String key : rules.keySet()) {
             System.out.println(key + ":" + rules.get(key));
         }
     }
 
     protected void convertGrammarToCNF() {
-
+        eliminateEpsilonRules();
     };
 
     private void eliminateEpsilonRules() {
+        Set<String> nullable = new HashSet<>();
+        Queue<String> nullableBuffer = new PriorityQueue<>();
+        for (String nonterm : rules.keySet()) {
+            for (List<String> rewritingRule : rules.get(nonterm)) {
+                if (rewritingRule.size() == 1 && rewritingRule.get(0).equals(EMPTY_DEFAULT)) {
+                    nullable.add(nonterm);
+                    break;
+                }
+            }
+        }
+        findCollapsingNonterms(nullable, nullableBuffer);
+        while (!nullableBuffer.isEmpty()) {
+            nullable.addAll(nullableBuffer);
+            nullableBuffer.clear();
+            findCollapsingNonterms(nullable, nullableBuffer);
+        }
+        boolean updated = true;
+        while (updated) {
+            updated = false;
+            for (String nonterm : rules.keySet()) {
+                for (List<String> rewritingRule : rules.get(nonterm)) {
+                    for (int i = 0; i < rewritingRule.size(); i++) {
+                        String term = rewritingRule.get(i);
+                        if (nullable.contains(term)) {
+                            List<String> newRule = new ArrayList<>(rewritingRule);
+                            newRule.remove(i);
+                            if (!term.equals(EXP) || nonterm.equals(EXP)) {
+                                updated |= addNewRuleIfUnique(nonterm, newRule);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        Queue<String> nontermsToDelete = new PriorityQueue<>();
+        for (String nonterm : rules.keySet()) {
+            List<List<String>> rewritingRules = rules.get(nonterm);
+            for (int i = 0; i < rewritingRules.size(); i++) {
+                if (rewritingRules.get(i).get(0).equals(EMPTY_DEFAULT)) {
+                    if (rewritingRules.size() == 1) {
+                        nontermsToDelete.add(nonterm);
+                    }
+                    rewritingRules.remove(i--);
+                }
+            }
+        }
+        while (!nontermsToDelete.isEmpty()) {
+            String nontermToDelete = nontermsToDelete.poll();
+            for (String nonterm : rules.keySet()) {
+                List<List<String>> rewritingRules = rules.get(nonterm);
+                for (int i = 0; i < rewritingRules.size(); i++) {
+                    boolean delete = false;
+                    for (String term : rewritingRules.get(i)) {
+                        if (term.equals(nontermToDelete)) {
+                            delete = true;
+                            break;
+                        }
+                    }
+                    if (delete) {
+                        rewritingRules.remove(i--);
+                        if (rewritingRules.size() == 0) {
+                            nontermsToDelete.add(nonterm);
+                        }
+                    }
+                }
+            }
+        }
+    }
 
+    private boolean addNewRuleIfUnique(String nonterm, List<String> newRule) {
+        for (List<String> rewritingRule : rules.get(nonterm)) {
+            if (rewritingRule.equals(newRule)) {
+                return false;
+            }
+        }
+        rules.get(nonterm).add(newRule);
+        return true;
+    }
+
+    private void findCollapsingNonterms(Set<String> nullable, Queue<String> nullableBuffer) {
+        for (String nonterm : rules.keySet()) {
+            if (!(nullable.contains(nonterm) || nullableBuffer.contains(nonterm))) {
+                for (List<String> rewritingRule : rules.get(nonterm)) {
+                    boolean isCollapsing = true;
+                    for (String term : rewritingRule) {
+                        if (!nullable.contains(term)) {
+                            isCollapsing = false;
+                            break;
+                        }
+                    }
+                    if (isCollapsing) {
+                        nullableBuffer.add(nonterm);
+                    }
+                }
+            }
+        }
     }
 
     private Map<String, List<List<String>>> generateGrammarFromRegex(StringBuilder regex, String startingNonterm) {
