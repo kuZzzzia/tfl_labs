@@ -145,7 +145,6 @@ public class MetaGrammar extends Reader {
 
     private void convertGrammarToCNF() {
         int newNontermCount = 0;
-        Map<String, List<List<String>>> newRules = new HashMap<>();
         Set<String> nontermsBeforeTransformation = new HashSet<>(rules.keySet());
         for (String nonterm : nontermsBeforeTransformation) {
             for (List<String> rewritingRule : rules.get(nonterm)) {
@@ -164,7 +163,7 @@ public class MetaGrammar extends Reader {
                 }
             }
         }
-    };
+    }
 
     private void protectTerms() {
         Map<String, String> protectedTerms = new HashMap<>();
