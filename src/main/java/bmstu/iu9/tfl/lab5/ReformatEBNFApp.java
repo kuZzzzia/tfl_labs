@@ -14,8 +14,10 @@ public class ReformatEBNFApp {
             System.out.println("New:");
             MetaGrammar newSyntax = new MetaGrammar(args[1]);
 
-            //        convertMetaGrammarToCNF(); TODO: eliminate epsilon rules -> if left recursion appeared then throw an error -> remove chain rules -> guard terminals
-            // apply only to current_syntax
+            currentSyntax.convertGrammarToCNF();
+
+            //TODO: eliminate epsilon rules -> remove chain rules -> guard terminals
+            //         apply only to current_syntax
             //TODO: check if delimiters are tokens (lab4) ONLY WARNING!!!
             //TODO: use ACT or CYK
             //TODO: parse trees -> new syntax

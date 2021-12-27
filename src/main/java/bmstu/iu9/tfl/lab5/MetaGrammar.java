@@ -39,6 +39,27 @@ public class MetaGrammar extends Reader {
     private static final String SEP_A_DEFAULT = "|";
     private static final String END_ITER_DEFAULT = "*";
 
+    private static final String CAPITAL_LETTER_REGEX = "[A-Z]";
+    private static final String SMALL_LETTER_REGEX = "[a-z]";
+    private static final String DIGIT_REGEX = "[0-9]";
+    private static final String NOT_WHITESPACE_SYMBOL_REGEX = ".";
+    private static final String WHITESPACE_SYMBOL_REGEX = "!blank!";
+    private static final String SYMBOL_REGEX = "[^\\[\\].!\\s]";
+    private static final String WHITESPACE_REGEX = "\\s";
+    private static final String NOT_WHITESPACE_REGEX = "\\S";
+    private static final char OPENING_PARENTHESIS = '(';
+    private static final char CLOSING_PARENTHESIS = ')';
+    private static final char REGEX_ITER_SYMBOL = '+';
+    private static final char REGEX_CLOSURE_SYMBOL = '*';
+
+    private static final String INVALID_TERM_WHILE_PARSING = "Invalid term";
+    private static final String NO_TERM_FOUND_WHILE_PARSING = "Term expected, but not found";
+    private static final String GENERATING_GRAMMAR_FROM_REGEX_ERROR = " grammar error: ";
+    private static final String NO_CLOSING_PARENTHESIS_FOUND = "Expected ')' after term parsed";
+    private static final String NO_REGEX_ITER_OR_CLOSURE_SYMBOL_FOUND = "Expected '*' or '+'";
+    private static final int EMPTY_STRING_LENGTH = 0;
+    private static final int POSITION_OF_SYMBOL_TO_PARSE = 0;
+
     private static final Set<String> SYNTAX_TOKENS = new HashSet<>(Arrays.asList(
             BEGIN_RULE,
             SEP_R,
@@ -94,18 +115,108 @@ public class MetaGrammar extends Reader {
                 Arrays.asList(alias.get(BEGIN_CONST), EXP, alias.get(END_CONST))
         )));
 
-        rules.putAll(generateGrammarFromRegex(alias.get(CNAME), CNAME));
+        rules.putAll(generateGrammarFromRegex(new StringBuilder(alias.get(CNAME)), CNAME));
 
-        rules.putAll(generateGrammarFromRegex(alias.get(NNAME), NNAME));
+        rules.putAll(generateGrammarFromRegex(new StringBuilder(alias.get(NNAME)), NNAME));
 
         for (String key : rules.keySet()) {
             System.out.println(key + ":" + rules.get(key));
         }
     }
 
-    private Map<String, List<List<String>>> generateGrammarFromRegex(String regex, String startingNonterm) { //TODO: implement
+    protected void convertGrammarToCNF() {
+
+    };
+
+    private void eliminateEpsilonRules() {
+
+    }
+
+    private Map<String, List<List<String>>> generateGrammarFromRegex(StringBuilder regex, String startingNonterm) {
         Map<String, List<List<String>>> regularGrammar = new HashMap<>();
+        if (regex.length() == EMPTY_STRING_LENGTH) {
+            throw new Error();
+        }
+        String currentNonterm = startingNonterm;
+        int nontermCount = 0;
+        while(regex.length() != EMPTY_STRING_LENGTH) {
+            if (regex.charAt(POSITION_OF_SYMBOL_TO_PARSE) == OPENING_PARENTHESIS) {
+                regex.deleteCharAt(POSITION_OF_SYMBOL_TO_PARSE);
+                String term;
+                try {
+                    term = parseTerm(regex);
+                } catch (Error e) {
+                    throw new Error(startingNonterm + GENERATING_GRAMMAR_FROM_REGEX_ERROR + e);
+                }
+                if (regex.length() == EMPTY_STRING_LENGTH || regex.charAt(POSITION_OF_SYMBOL_TO_PARSE) != CLOSING_PARENTHESIS) {
+                    throw new Error(startingNonterm + GENERATING_GRAMMAR_FROM_REGEX_ERROR + NO_CLOSING_PARENTHESIS_FOUND);
+                }
+                regex.deleteCharAt(POSITION_OF_SYMBOL_TO_PARSE);
+                if (regex.length() == EMPTY_STRING_LENGTH) {
+                    throw new Error(startingNonterm + GENERATING_GRAMMAR_FROM_REGEX_ERROR + NO_REGEX_ITER_OR_CLOSURE_SYMBOL_FOUND);
+                }
+                if (regex.charAt(POSITION_OF_SYMBOL_TO_PARSE) == REGEX_ITER_SYMBOL) {
+                    String newNonterm = generateNewNonterm(startingNonterm, nontermCount++);
+                    regularGrammar.put(currentNonterm, new ArrayList<>(Arrays.asList(Arrays.asList(term, currentNonterm), Arrays.asList(term, newNonterm))));
+                    currentNonterm = newNonterm;
+                } else if (regex.charAt(POSITION_OF_SYMBOL_TO_PARSE) == REGEX_CLOSURE_SYMBOL) {
+                    String newNonterm = generateNewNonterm(startingNonterm, nontermCount++);
+                    regularGrammar.put(currentNonterm, new ArrayList<>(Arrays.asList(Arrays.asList(term, currentNonterm), Collections.singletonList(newNonterm))));
+                    currentNonterm = newNonterm;
+                } else {
+                    throw new Error(startingNonterm + GENERATING_GRAMMAR_FROM_REGEX_ERROR + NO_REGEX_ITER_OR_CLOSURE_SYMBOL_FOUND);
+                }
+                regex.deleteCharAt(POSITION_OF_SYMBOL_TO_PARSE);
+            } else {
+                String term;
+                try {
+                    term = parseTerm(regex);
+                } catch (Error e) {
+                    throw new Error(startingNonterm + GENERATING_GRAMMAR_FROM_REGEX_ERROR + e);
+                }
+                String newNonterm = generateNewNonterm(startingNonterm, nontermCount++);
+                regularGrammar.put(currentNonterm, new ArrayList<>(Collections.singletonList(Arrays.asList(term, newNonterm))));
+                currentNonterm = newNonterm;
+            }
+        }
+        regularGrammar.put(currentNonterm, new ArrayList<>(Collections.singletonList(Collections.singletonList(EMPTY_DEFAULT))));
         return regularGrammar;
+    }
+
+    private static String generateNewNonterm(String name, int number) {
+        return name + "_" + number;
+    }
+
+    private String parseTerm(StringBuilder regex) {
+        String regexString = regex.toString();
+        if (regexString.isEmpty()) {
+            throw new Error(NO_TERM_FOUND_WHILE_PARSING);
+        }
+        int lengthOfPrefixToDelete = 0;
+        String terminal = "";
+        if (regexString.startsWith(CAPITAL_LETTER_REGEX)) {
+            terminal = CAPITAL_LETTER_REGEX;
+            lengthOfPrefixToDelete = CAPITAL_LETTER_REGEX.length();
+        } else if (regexString.startsWith(SMALL_LETTER_REGEX)) {
+            terminal = SMALL_LETTER_REGEX;
+            lengthOfPrefixToDelete = SMALL_LETTER_REGEX.length();
+        } else if (regexString.startsWith(DIGIT_REGEX)) {
+            terminal = DIGIT_REGEX;
+            lengthOfPrefixToDelete = DIGIT_REGEX.length();
+        } else if (regexString.substring(POSITION_OF_SYMBOL_TO_PARSE, 1).matches(SYMBOL_REGEX)){
+            terminal = regexString.substring(POSITION_OF_SYMBOL_TO_PARSE, 1);
+            lengthOfPrefixToDelete = terminal.length();
+        } else if (regexString.startsWith(NOT_WHITESPACE_SYMBOL_REGEX)) {
+            terminal = NOT_WHITESPACE_REGEX;
+            lengthOfPrefixToDelete = NOT_WHITESPACE_SYMBOL_REGEX.length();
+        } else if (regexString.startsWith(WHITESPACE_SYMBOL_REGEX)) {
+            terminal = WHITESPACE_REGEX;
+            lengthOfPrefixToDelete = WHITESPACE_SYMBOL_REGEX.length();
+        } else {
+            throw new Error(INVALID_TERM_WHILE_PARSING);
+        }
+        regex.delete(POSITION_OF_SYMBOL_TO_PARSE, lengthOfPrefixToDelete);
+        return terminal;
     }
 
     private Map<String, String> getSyntaxDefinition() {
