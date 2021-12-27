@@ -13,11 +13,9 @@ public class ReformatEBNFApp {
 
             currentSyntax.transformCurrentMeta();
 
-//            System.out.println("New:");
-//            MetaGrammar newSyntax = new MetaGrammar(args[1]);
+            System.out.println("New:");
+            MetaGrammar newSyntax = new MetaGrammar(args[1]);
 
-            //TODO: eliminate epsilon rules -> remove chain rules -> guard terminals
-            //         apply only to current_syntax
             //TODO: check if delimiters are tokens (lab4) ONLY WARNING!!!
             //TODO: use ACT or CYK
             //TODO: parse trees -> new syntax

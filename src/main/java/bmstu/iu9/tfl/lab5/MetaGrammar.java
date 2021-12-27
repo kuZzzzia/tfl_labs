@@ -1,5 +1,7 @@
 package bmstu.iu9.tfl.lab5;
 
+import bmstu.iu9.tfl.lab4.Tokenizer;
+
 import java.io.IOException;
 import java.util.*;
 
@@ -136,6 +138,12 @@ public class MetaGrammar extends Reader {
                     rewritingRule.removeIf(String::isEmpty);
                 }
             }
+        }
+        Tokenizer tokenizer = new Tokenizer(this);
+        Set<String> notTokens = new HashSet<>(SYNTAX_TOKENS);
+        notTokens.retainAll(tokenizer.getTokens());
+        if (!notTokens.isEmpty()) {
+            System.out.println("WARNING: following syntax elements are not tokens : " + notTokens);
         }
         eliminateChainRules();
         protectTerms();
@@ -466,6 +474,10 @@ public class MetaGrammar extends Reader {
             throw new Error(NO_CNAME_OR_NNAME_DEFINITION_ERROR);
         }
         return alias;
+    }
+
+    public Map<String, List<List<String>>> getRules() {
+        return rules;
     }
 
 }
