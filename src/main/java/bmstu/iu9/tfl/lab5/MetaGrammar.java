@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.*;
 
 public class MetaGrammar extends Reader {
+    private static final String SPECIAL_SYMBOL = "$";
+
     private static final String CONST_FILE_SEPARATOR = "=";
     private static final String SYNTAX_DEFINITION_ERROR = "Error in defining syntax: ";
     private static final String NO_CNAME_OR_NNAME_DEFINITION_ERROR = "No NNAME or CNAME definition found";
@@ -33,11 +35,11 @@ public class MetaGrammar extends Reader {
     private static final String CNAME = "CNAME";
 
     private static final String EMPTY_DEFAULT = "";
-    private static final String LPAREN_DEFAULT = "(";
-    private static final String RPAREN_DEFAULT = ")";
-    private static final String SEP_R_DEFAULT = "=";
-    private static final String SEP_A_DEFAULT = "|";
-    private static final String END_ITER_DEFAULT = "*";
+    private static final String LPAREN_DEFAULT = "$($";
+    private static final String RPAREN_DEFAULT = "$)$";
+    private static final String SEP_R_DEFAULT = "$=$";
+    private static final String SEP_A_DEFAULT = "$|$";
+    private static final String END_ITER_DEFAULT = "$*$";
 
     private static final String CAPITAL_LETTER_REGEX = "[A-Z]";
     private static final String SMALL_LETTER_REGEX = "[a-z]";
@@ -126,7 +128,7 @@ public class MetaGrammar extends Reader {
         System.out.println();
     }
 
-    protected void convertGrammarToCNF() {
+    protected void transformCurrentMeta() {
         eliminateEpsilonRules();
         for (String nonterm : rules.keySet()) {
             for (List<String> rewritingRule : rules.get(nonterm)) {
@@ -138,7 +140,47 @@ public class MetaGrammar extends Reader {
         printRules();
         eliminateChainRules();
         printRules();
+        protectTerms();
+        printRules();
+        convertGrammarToCNF();
+    }
+
+    protected void convertGrammarToCNF() {
+
     };
+
+    private void protectTerms() {
+        Map<String, String> protectedTerms = new HashMap<>();
+        for (String nonterm : rules.keySet()) {
+                for (List<String> rewritingRule : rules.get(nonterm)) {
+                    if (rewritingRule.size() > 1) {
+                        for (int i = 0; i < rewritingRule.size(); i++) {
+                            String term = rewritingRule.get(i);
+                            if (isTerm(term)) {
+                                Optional<String> protectingNonterm = Optional.ofNullable(protectedTerms.get(term));
+                                if (protectingNonterm.isPresent()) {
+                                    rewritingRule.set(i, protectingNonterm.get());
+                                } else {
+                                    String newProtectingNonterm = "PROTECTED_" + term.substring(1, term.length() - 1);
+                                    protectedTerms.put(term, newProtectingNonterm);
+                                    rewritingRule.set(i, newProtectingNonterm);
+                                }
+                            }
+                        }
+                    }
+                }
+        }
+        for (String protectedTerm : protectedTerms.keySet()) {
+            String newProtectingNonterm = protectedTerms.get(protectedTerm);
+            List<List<String>> newRewritingRule = new ArrayList<>();
+            newRewritingRule.add(new ArrayList<>(Collections.singleton(protectedTerm)));
+            rules.put(newProtectingNonterm, newRewritingRule);
+        }
+    }
+
+    private static boolean isTerm(String candidate) {
+        return (candidate.length() > 2 && candidate.startsWith(SPECIAL_SYMBOL) && candidate.endsWith(SPECIAL_SYMBOL));
+    }
 
     private void eliminateChainRules() {
         for (String nontermLeft : rules.keySet()) {
@@ -345,28 +387,32 @@ public class MetaGrammar extends Reader {
         int lengthOfPrefixToDelete = 0;
         String terminal = "";
         if (regexString.startsWith(CAPITAL_LETTER_REGEX)) {
-            terminal = CAPITAL_LETTER_REGEX;
+            terminal = wrapWithSpecialSymbol(CAPITAL_LETTER_REGEX);
             lengthOfPrefixToDelete = CAPITAL_LETTER_REGEX.length();
         } else if (regexString.startsWith(SMALL_LETTER_REGEX)) {
-            terminal = SMALL_LETTER_REGEX;
+            terminal = wrapWithSpecialSymbol(SMALL_LETTER_REGEX);
             lengthOfPrefixToDelete = SMALL_LETTER_REGEX.length();
         } else if (regexString.startsWith(DIGIT_REGEX)) {
-            terminal = DIGIT_REGEX;
+            terminal = wrapWithSpecialSymbol(DIGIT_REGEX);
             lengthOfPrefixToDelete = DIGIT_REGEX.length();
         } else if (regexString.substring(POSITION_OF_SYMBOL_TO_PARSE, 1).matches(SYMBOL_REGEX)){
-            terminal = regexString.substring(POSITION_OF_SYMBOL_TO_PARSE, 1);
+            terminal = wrapWithSpecialSymbol(regexString.substring(POSITION_OF_SYMBOL_TO_PARSE, 1));
             lengthOfPrefixToDelete = terminal.length();
         } else if (regexString.startsWith(NOT_WHITESPACE_SYMBOL_REGEX)) {
-            terminal = NOT_WHITESPACE_REGEX;
+            terminal = wrapWithSpecialSymbol(NOT_WHITESPACE_REGEX);
             lengthOfPrefixToDelete = NOT_WHITESPACE_SYMBOL_REGEX.length();
         } else if (regexString.startsWith(WHITESPACE_SYMBOL_REGEX)) {
-            terminal = WHITESPACE_REGEX;
+            terminal = wrapWithSpecialSymbol(WHITESPACE_REGEX);
             lengthOfPrefixToDelete = WHITESPACE_SYMBOL_REGEX.length();
         } else {
             throw new Error(INVALID_TERM_WHILE_PARSING);
         }
         regex.delete(POSITION_OF_SYMBOL_TO_PARSE, lengthOfPrefixToDelete);
         return terminal;
+    }
+
+    private static String wrapWithSpecialSymbol(String s) {
+        return SPECIAL_SYMBOL + s + SPECIAL_SYMBOL;
     }
 
     private Map<String, String> getSyntaxDefinition() {
@@ -395,7 +441,7 @@ public class MetaGrammar extends Reader {
             }
             String key = split[0].trim(), value = split[1].trim();
             if (SYNTAX_TOKENS.contains(key)) {
-                alias.replace(key, value);
+                alias.replace(key, wrapWithSpecialSymbol(value));
             } else if (key.equals(NNAME) || key.equals(CNAME)) {
                 alias.put(key, value);
             }
