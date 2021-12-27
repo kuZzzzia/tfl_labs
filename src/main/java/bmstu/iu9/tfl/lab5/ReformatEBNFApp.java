@@ -11,14 +11,10 @@ public class ReformatEBNFApp {
             System.out.println("Current:");
             MetaGrammar currentSyntax = new MetaGrammar(args[0]);
 
-            System.out.println("New:");
-            MetaGrammar newSyntax = new MetaGrammar(args[1]);
-
             currentSyntax.convertGrammarToCNF();
 
-            System.out.println();
-            System.out.println("Current:");
-            currentSyntax.printRules();
+//            System.out.println("New:");
+//            MetaGrammar newSyntax = new MetaGrammar(args[1]);
 
             //TODO: eliminate epsilon rules -> remove chain rules -> guard terminals
             //         apply only to current_syntax

@@ -77,10 +77,7 @@ public class MetaGrammar extends Reader {
             END_CONST
     ));
 
-
     private final Map<String, List<List<String>>> rules;
-
-
 
     public MetaGrammar(String path) throws IOException {
         super(path);
@@ -88,31 +85,31 @@ public class MetaGrammar extends Reader {
 
         rules = new HashMap<>();
         rules.put(RULE, new ArrayList<>(Collections.singletonList(
-                Arrays.asList(alias.get(BEGIN_RULE), NTERM, alias.get(SEP_R), EXP, alias.get(END_RULE))
+                new ArrayList<>(Arrays.asList(alias.get(BEGIN_RULE), NTERM, alias.get(SEP_R), EXP, alias.get(END_RULE)))
         )));
-        rules.put(EXP, new ArrayList<>(Arrays.asList(
-                Collections.singletonList(ALT),
-                Arrays.asList(ITER, EXP),
-                Arrays.asList(NTERM, EXP),
-                Arrays.asList(CONST, EXP),
-                Arrays.asList(alias.get(LPAREN), EXP, alias.get(RPAREN), EXP),
+        rules.put(EXP, new ArrayList<>(new ArrayList<>(Arrays.asList(
+                new ArrayList<>(Collections.singletonList(ALT)),
+                new ArrayList<>(Arrays.asList(ITER, EXP)),
+                new ArrayList<>(Arrays.asList(NTERM, EXP)),
+                new ArrayList<>(Arrays.asList(CONST, EXP)),
+                new ArrayList<>(Arrays.asList(alias.get(LPAREN), EXP, alias.get(RPAREN), EXP)),
                 new ArrayList<>(Collections.singleton(EMPTY_DEFAULT))
-        )));
+        ))));
         rules.put(NTERM, new ArrayList<>(Collections.singletonList(
-                Arrays.asList(alias.get(BEGIN_NTERM), NNAME, alias.get(END_NTERM))
+                new ArrayList<>(Arrays.asList(alias.get(BEGIN_NTERM), NNAME, alias.get(END_NTERM)))
         )));
         rules.put(ALT, new ArrayList<>(Collections.singletonList(
-                Arrays.asList(alias.get(BEGIN_ALT), EXP, alias.get(SEP_A), NEXTALT)
+                new ArrayList<>(Arrays.asList(alias.get(BEGIN_ALT), EXP, alias.get(SEP_A), NEXTALT))
         )));
-        rules.put(NEXTALT, new ArrayList<>(Arrays.asList(
-                Arrays.asList(EXP, alias.get(SEP_A), NEXTALT),
-                Arrays.asList(EXP, alias.get(END_ALT))
-        )));
+        rules.put(NEXTALT, new ArrayList<>(new ArrayList<>(Arrays.asList(
+                new ArrayList<>(Arrays.asList(EXP, alias.get(SEP_A), NEXTALT)),
+                new ArrayList<>(Arrays.asList(EXP, alias.get(END_ALT)))
+        ))));
         rules.put(ITER, new ArrayList<>(Collections.singletonList(
-                Arrays.asList(alias.get(BEGIN_ITER), EXP, alias.get(END_ITER))
+                new ArrayList<>(Arrays.asList(alias.get(BEGIN_ITER), EXP, alias.get(END_ITER)))
         )));
         rules.put(CONST, new ArrayList<>(Collections.singletonList(
-                Arrays.asList(alias.get(BEGIN_CONST), EXP, alias.get(END_CONST))
+                new ArrayList<>(Arrays.asList(alias.get(BEGIN_CONST), EXP, alias.get(END_CONST)))
         )));
 
         rules.putAll(generateGrammarFromRegex(new StringBuilder(alias.get(CNAME)), CNAME));
@@ -126,11 +123,56 @@ public class MetaGrammar extends Reader {
         for (String key : rules.keySet()) {
             System.out.println(key + ":" + rules.get(key));
         }
+        System.out.println();
     }
 
     protected void convertGrammarToCNF() {
         eliminateEpsilonRules();
+        for (String nonterm : rules.keySet()) {
+            for (List<String> rewritingRule : rules.get(nonterm)) {
+                if (!nonterm.equals(EXP) || rewritingRule.size() != 1){
+                    rewritingRule.removeIf(String::isEmpty);
+                }
+            }
+        }
+        printRules();
+        eliminateChainRules();
+        printRules();
     };
+
+    private void eliminateChainRules() {
+        for (String nontermLeft : rules.keySet()) {
+            boolean updated = true;
+            while (updated) {
+                updated = false;
+                for (String nontermRight : rules.keySet()) {
+                    int i = 0;
+                    List<List<String>> rewritingRules = rules.get(nontermLeft);
+                    int length = rewritingRules.size();
+                    while (i < length && !(rewritingRules.get(i).size() == 1
+                            && rewritingRules.get(i).get(0).equals(nontermRight))) {
+                        i++;
+                    }
+                    if (i != length) {
+                        rules.get(nontermLeft).remove(i);
+                        for (List<String> newRewritingRule : rules.get(nontermRight)) {
+                            boolean exists = false;
+                            for (List<String> rewritingRule : rules.get(nontermLeft)) {
+                                if (rewritingRule.equals(newRewritingRule)) {
+                                    exists = true;
+                                    break;
+                                }
+                            }
+                            if (!exists) {
+                                rules.get(nontermLeft).add(new ArrayList<>(newRewritingRule));
+                                updated = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     private void eliminateEpsilonRules() {
         Set<String> nullable = new HashSet<>();
