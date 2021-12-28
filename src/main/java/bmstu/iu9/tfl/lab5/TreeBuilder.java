@@ -8,7 +8,6 @@ import java.util.Map;
 public class TreeBuilder extends Reader {
 
     private static final int TERMINAL_RULE_LENGTH = 1;
-    private static final int ITER_RULE_LENGTH = 2;
 
     private final Map<String, List<List<String>>> currentSyntax;
     private final Map<String, List<List<String>>> newSyntax;
@@ -29,26 +28,27 @@ public class TreeBuilder extends Reader {
     private void AlgoCYK() {
         List<List<List<TreeNode>>> tableCYK = initializeTableCYK();
 
-        for (int i = 1; i <= grammar.length(); i++) {
-            String inputTerm = String.valueOf(grammar.charAt(i - 1));
+        for (int i = 0; i < grammar.length(); i++) {
+            String inputTerm = String.valueOf(grammar.charAt(i));
             for (String nonterm : currentSyntax.keySet()) {
-                if (currentSyntax.get(nonterm).size() == TERMINAL_RULE_LENGTH && currentSyntax.get(nonterm).get(0).size() == 1) {
-                    String term = unwrapTerm(currentSyntax.get(nonterm).get(0).get(0));
-                        if ( (term.length() > 1 && inputTerm.matches(term) ) || inputTerm.equals(term)) {
-                            tableCYK.get(1).get(i).add(new TreeNode(nonterm, inputTerm));
+                for (List<String> rewritingRule : currentSyntax.get(nonterm)) {
+                    if (rewritingRule.size() == TERMINAL_RULE_LENGTH) {
+                        String term = unwrapTerm(rewritingRule.get(0));
+                        if ((term.length() > 1 && inputTerm.matches(term)) || inputTerm.equals(term)) {
+                            tableCYK.get(i).get(0).add(new TreeNode(nonterm, inputTerm));
                         }
+                    }
                 }
             }
         }
-        for (int l = 2; l <= grammar.length(); l++) {
-            for (int i = 1; i <= grammar.length() - l + 1; i++) {
-                int j = i + l - 1;
-                for (int k = i; k <= j - 1; k++) {
+        for (int j = 1; j < grammar.length(); j++) {
+            for (int i = 0; i < grammar.length() - j; i++) {
+                for (int k = 0; k < j; k++) {
                     for (String nonterm : currentSyntax.keySet()) {
                         for (List<String> rewritingRule : currentSyntax.get(nonterm)) {
-                            if (rewritingRule.size() == ITER_RULE_LENGTH) {
+                            if (rewritingRule.size() == 2) {
                                 List<TreeNode> left = checkListContainsNonterm(tableCYK.get(i).get(k), rewritingRule.get(0));
-                                List<TreeNode> right = checkListContainsNonterm(tableCYK.get(k+1).get(j), rewritingRule.get(1));
+                                List<TreeNode> right = checkListContainsNonterm(tableCYK.get(i + k + 1).get(j - k - 1), rewritingRule.get(1));
                                 if (left.size() != 0 && right.size() != 0) {
                                     for (TreeNode leftNode : left) {
                                         for (TreeNode rightNode : right) {
@@ -62,8 +62,8 @@ public class TreeBuilder extends Reader {
                 }
             }
         }
-        for (TreeNode s : tableCYK.get(1).get(grammar.length())) {
-            if (s.getNonterm().equals("[S]")) {
+        for (TreeNode s : tableCYK.get(0).get(grammar.length() - 1)) {
+            if (s.getNonterm().equals(MetaGrammar.NEW_STARTING_NONTERM)) {
                 System.out.println("YES");
             }
         }
@@ -80,12 +80,12 @@ public class TreeBuilder extends Reader {
     }
 
     private List<List<List<TreeNode>>> initializeTableCYK() {
-        List<List<List<TreeNode>>> tableCYK = new ArrayList<>(grammar.length() + 1);
-        for (int i = 0; i < grammar.length() + 1; i++) {
-            tableCYK.add(new ArrayList<>(grammar.length() + 1));
+        List<List<List<TreeNode>>> tableCYK = new ArrayList<>(grammar.length());
+        for (int i = 0; i < grammar.length(); i++) {
+            tableCYK.add(new ArrayList<>(grammar.length()));
         }
         for (List<List<TreeNode>> elem : tableCYK) {
-            for (int i = 0; i < grammar.length() + 1; i++) {
+            for (int i = 0; i < grammar.length(); i++) {
                 elem.add(new ArrayList<>());
             }
         }

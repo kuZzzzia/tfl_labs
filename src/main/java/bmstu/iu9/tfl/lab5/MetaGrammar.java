@@ -66,6 +66,7 @@ public class MetaGrammar extends Reader {
     private static final int POSITION_OF_SYMBOL_TO_PARSE = 0;
 
     private static final String STARTING_NONTERM = "[S]";
+    protected static final String NEW_STARTING_NONTERM = "[S0]";
 
     private static final Set<String> SYNTAX_TOKENS = new HashSet<>(Arrays.asList(
             BEGIN_RULE,
@@ -92,36 +93,38 @@ public class MetaGrammar extends Reader {
         alias = getSyntaxDefinition();
 
         rules = new HashMap<>();
+
         rules.put(RULE, new ArrayList<>(Collections.singletonList(
-                new ArrayList<>(Arrays.asList(SPACE, alias.get(BEGIN_RULE), SPACE, NTERM, SPACE, alias.get(SEP_R), SPACE, EXP, SPACE, alias.get(END_RULE), SPACE))
+                new ArrayList<>(Arrays.asList(SPACE, alias.get(BEGIN_RULE), NTERM, alias.get(SEP_R), EXP, alias.get(END_RULE), SPACE))
         )));
         rules.put(EXP, new ArrayList<>(new ArrayList<>(Arrays.asList(
-                new ArrayList<>(Collections.singletonList(ALT)),
-                new ArrayList<>(Arrays.asList(ITER, SPACE, EXP)),
-                new ArrayList<>(Arrays.asList(NTERM, SPACE, EXP)),
-                new ArrayList<>(Arrays.asList(CONST, SPACE, EXP)),
-                new ArrayList<>(Arrays.asList(alias.get(LPAREN), SPACE, EXP, SPACE, alias.get(RPAREN), SPACE, EXP)),
+                new ArrayList<>(Arrays.asList(ALT)),
+                new ArrayList<>(Arrays.asList(ITER, EXP)),
+                new ArrayList<>(Arrays.asList(NTERM, EXP)),
+                new ArrayList<>(Arrays.asList(CONST, EXP)),
+                new ArrayList<>(Arrays.asList(SPACE, alias.get(LPAREN), EXP, alias.get(RPAREN), SPACE, EXP)),
                 new ArrayList<>(Collections.singleton(EMPTY_DEFAULT))
         ))));
         rules.put(NTERM, new ArrayList<>(Collections.singletonList(
-                new ArrayList<>(Arrays.asList(alias.get(BEGIN_NTERM), SPACE, NNAME, SPACE, alias.get(END_NTERM)))
+                new ArrayList<>(Arrays.asList(SPACE, alias.get(BEGIN_NTERM), SPACE, NNAME, SPACE, alias.get(END_NTERM), SPACE))
         )));
         rules.put(ALT, new ArrayList<>(Collections.singletonList(
-                new ArrayList<>(Arrays.asList(alias.get(BEGIN_ALT), SPACE, EXP, SPACE, alias.get(SEP_A), SPACE, NEXTALT))
+                new ArrayList<>(Arrays.asList(SPACE, alias.get(BEGIN_ALT), EXP, alias.get(SEP_A), NEXTALT))
         )));
         rules.put(NEXTALT, new ArrayList<>(new ArrayList<>(Arrays.asList(
-                new ArrayList<>(Arrays.asList(EXP, SPACE, alias.get(SEP_A), SPACE, NEXTALT)),
-                new ArrayList<>(Arrays.asList(EXP, SPACE, alias.get(END_ALT)))
+                new ArrayList<>(Arrays.asList(EXP, alias.get(SEP_A), NEXTALT)),
+                new ArrayList<>(Arrays.asList(EXP, alias.get(END_ALT), SPACE))
         ))));
         rules.put(ITER, new ArrayList<>(Collections.singletonList(
-                new ArrayList<>(Arrays.asList(alias.get(BEGIN_ITER), SPACE, EXP, SPACE, alias.get(END_ITER)))
+                new ArrayList<>(Arrays.asList(SPACE, alias.get(BEGIN_ITER), EXP, alias.get(END_ITER), SPACE))
         )));
         rules.put(CONST, new ArrayList<>(Collections.singletonList(
-                new ArrayList<>(Arrays.asList(alias.get(BEGIN_CONST), SPACE, EXP, SPACE, alias.get(END_CONST)))
+                new ArrayList<>(Arrays.asList(SPACE, alias.get(BEGIN_CONST), SPACE, CNAME, SPACE, alias.get(END_CONST), SPACE))
         )));
 
         rules.put(SPACE, new ArrayList<>(new ArrayList<>(Arrays.asList(
                 new ArrayList<>(Collections.singleton(wrapWithSpecialSymbol(WHITESPACE_REGEX))),
+                new ArrayList<>(Arrays.asList(wrapWithSpecialSymbol(WHITESPACE_REGEX), SPACE)),
                 new ArrayList<>(Collections.singleton(EMPTY_DEFAULT))
         ))));
 
@@ -155,6 +158,9 @@ public class MetaGrammar extends Reader {
                 }
             }
         }
+
+        rules.put(NEW_STARTING_NONTERM, new ArrayList<>());
+        rules.get(NEW_STARTING_NONTERM).add(new ArrayList<>(Collections.singleton(STARTING_NONTERM)));
 
         eliminateChainRules();
         protectTerms(false);
@@ -229,16 +235,17 @@ public class MetaGrammar extends Reader {
             }
         }
         for (String protectedTerm : protectedTerms.keySet()) {
+            String unwrappedTerm = protectedTerm.substring(1, protectedTerm.length() - 1);
             String newProtectingNonterm = protectedTerms.get(protectedTerm);
             List<List<String>> newRewritingRule = new ArrayList<>();
             if (mode) {
                 List<String> rewrite = new ArrayList<>();
-                if (protectedTerm.length() > 1) {
-                    for (int i = 1; i < protectedTerm.length() - 1; i++) {
-                        String nonterm = "PROTECTED_" + protectedTerm.charAt(i);
+                if (unwrappedTerm.length() > 1) {
+                    for (int i = 0; i < unwrappedTerm.length(); i++) {
+                        String nonterm = "PROTECTED_" + unwrappedTerm.charAt(i);
                         if (!rules.containsKey(nonterm)) {
                             rules.put(nonterm, new ArrayList<>());
-                            rules.get(nonterm).add(new ArrayList<>(Collections.singletonList(wrapWithSpecialSymbol(String.valueOf(protectedTerm.charAt(i))))));
+                            rules.get(nonterm).add(new ArrayList<>(Collections.singletonList(wrapWithSpecialSymbol(String.valueOf(unwrappedTerm.charAt(i))))));
                         }
                         rewrite.add(nonterm);
                     }
@@ -293,22 +300,28 @@ public class MetaGrammar extends Reader {
 
     private void eliminateEpsilonRules() {
         Set<String> nullable = new HashSet<>();
-        Queue<String> nullableBuffer = new PriorityQueue<>();
-        for (String nonterm : rules.keySet()) {
-            for (List<String> rewritingRule : rules.get(nonterm)) {
-                if (rewritingRule.size() == 1 && rewritingRule.get(0).equals(EMPTY_DEFAULT)) {
-                    nullable.add(nonterm);
-                    break;
+        boolean updated = true;
+        while (updated) {
+            updated = false;
+            for (String nonterm : rules.keySet()) {
+                if (!nullable.contains(nonterm)) {
+                    for (List<String> rewritingRule : rules.get(nonterm)) {
+                        boolean isNullable = true;
+                        for (String term : rewritingRule) {
+                            if (!nullable.contains(term) && !(term.equals(EMPTY_DEFAULT))) {
+                                isNullable = false;
+                                break;
+                            }
+                        }
+                        if (isNullable) {
+                            nullable.add(nonterm);
+                            updated = true;
+                        }
+                    }
                 }
             }
         }
-        findCollapsingNonterms(nullable, nullableBuffer);
-        while (!nullableBuffer.isEmpty()) {
-            nullable.addAll(nullableBuffer);
-            nullableBuffer.clear();
-            findCollapsingNonterms(nullable, nullableBuffer);
-        }
-        boolean updated = true;
+        updated = true;
         while (updated) {
             updated = false;
             for (String nonterm : rules.keySet()) {
@@ -378,25 +391,6 @@ public class MetaGrammar extends Reader {
             }
         }
         newRulesBuffer.add(newRule);
-    }
-
-    private void findCollapsingNonterms(Set<String> nullable, Queue<String> nullableBuffer) {
-        for (String nonterm : rules.keySet()) {
-            if (!(nullable.contains(nonterm) || nullableBuffer.contains(nonterm))) {
-                for (List<String> rewritingRule : rules.get(nonterm)) {
-                    boolean isCollapsing = true;
-                    for (String term : rewritingRule) {
-                        if (!nullable.contains(term)) {
-                            isCollapsing = false;
-                            break;
-                        }
-                    }
-                    if (isCollapsing) {
-                        nullableBuffer.add(nonterm);
-                    }
-                }
-            }
-        }
     }
 
     private Map<String, List<List<String>>> generateGrammarFromRegex(StringBuilder regex, String startingNonterm) {
