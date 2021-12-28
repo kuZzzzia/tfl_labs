@@ -57,7 +57,7 @@ public class Tokenizer {
             if (rewritingRule.size() == 1) {
                 String term = rewritingRule.get(0);
                 if (isTerm(term)) {
-                    lang.add(term);
+                    lang.add(term.substring(1, term.length() - 1));
                 } else if (!stackTraceVisited.contains(term)) {
                     stackTraceVisited.add(nonterm);
                     lang.addAll(findNontermLanguage(term, stackTraceVisited));
@@ -84,9 +84,9 @@ public class Tokenizer {
                 String resultSetGenerator = getFirstOrLastSetGenerator(rewritingRule, first);
                 if (isTerm(resultSetGenerator)) {
                     if (resultSet.containsKey(nonterm)) {
-                        resultSet.get(nonterm).add(resultSetGenerator);
+                        resultSet.get(nonterm).add(resultSetGenerator.substring(1, resultSetGenerator.length() - 1));
                     } else {
-                        resultSet.put(nonterm, new HashSet<>(Collections.singleton(resultSetGenerator)));
+                        resultSet.put(nonterm, new HashSet<>(Collections.singleton(resultSetGenerator.substring(1, resultSetGenerator.length() - 1))));
                     }
                 }
             }
@@ -137,7 +137,7 @@ public class Tokenizer {
                                         follow ? i + 1 : i - 1
                                 );
                                 if (isTerm(followOrPrecedeGenerator)) {
-                                    joined.add(followOrPrecedeGenerator);
+                                    joined.add(followOrPrecedeGenerator.substring(1, followOrPrecedeGenerator.length() - 1));
                                 } else {
                                     joined.addAll(firstOrLast.getOrDefault(followOrPrecedeGenerator, new HashSet<>()));
                                 }
