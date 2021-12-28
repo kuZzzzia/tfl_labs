@@ -35,6 +35,7 @@ public class MetaGrammar extends Reader {
     private static final String END_CONST = "END_CONST";
     private static final String NNAME = "NNAME";
     private static final String CNAME = "CNAME";
+    private static final String SPACE = "SPACE";
 
     private static final String EMPTY_DEFAULT = "";
     private static final String LPAREN_DEFAULT = "$($";
@@ -64,6 +65,8 @@ public class MetaGrammar extends Reader {
     private static final int EMPTY_STRING_LENGTH = 0;
     private static final int POSITION_OF_SYMBOL_TO_PARSE = 0;
 
+    private static final String STARTING_NONTERM = "[S]";
+
     private static final Set<String> SYNTAX_TOKENS = new HashSet<>(Arrays.asList(
             BEGIN_RULE,
             SEP_R,
@@ -84,42 +87,56 @@ public class MetaGrammar extends Reader {
     private final Map<String, List<List<String>>> rules;
     private final Map<String, String> alias;
 
-    public MetaGrammar(String path) throws IOException {
+    public MetaGrammar(String path, boolean mode) throws IOException {
         super(path);
         alias = getSyntaxDefinition();
 
         rules = new HashMap<>();
         rules.put(RULE, new ArrayList<>(Collections.singletonList(
-                new ArrayList<>(Arrays.asList(alias.get(BEGIN_RULE), NTERM, alias.get(SEP_R), EXP, alias.get(END_RULE)))
+                new ArrayList<>(Arrays.asList(SPACE, alias.get(BEGIN_RULE), SPACE, NTERM, SPACE, alias.get(SEP_R), SPACE, EXP, SPACE, alias.get(END_RULE), SPACE))
         )));
         rules.put(EXP, new ArrayList<>(new ArrayList<>(Arrays.asList(
                 new ArrayList<>(Collections.singletonList(ALT)),
-                new ArrayList<>(Arrays.asList(ITER, EXP)),
-                new ArrayList<>(Arrays.asList(NTERM, EXP)),
-                new ArrayList<>(Arrays.asList(CONST, EXP)),
-                new ArrayList<>(Arrays.asList(alias.get(LPAREN), EXP, alias.get(RPAREN), EXP)),
+                new ArrayList<>(Arrays.asList(ITER, SPACE, EXP)),
+                new ArrayList<>(Arrays.asList(NTERM, SPACE, EXP)),
+                new ArrayList<>(Arrays.asList(CONST, SPACE, EXP)),
+                new ArrayList<>(Arrays.asList(alias.get(LPAREN), SPACE, EXP, SPACE, alias.get(RPAREN), SPACE, EXP)),
                 new ArrayList<>(Collections.singleton(EMPTY_DEFAULT))
         ))));
         rules.put(NTERM, new ArrayList<>(Collections.singletonList(
-                new ArrayList<>(Arrays.asList(alias.get(BEGIN_NTERM), NNAME, alias.get(END_NTERM)))
+                new ArrayList<>(Arrays.asList(alias.get(BEGIN_NTERM), SPACE, NNAME, SPACE, alias.get(END_NTERM)))
         )));
         rules.put(ALT, new ArrayList<>(Collections.singletonList(
-                new ArrayList<>(Arrays.asList(alias.get(BEGIN_ALT), EXP, alias.get(SEP_A), NEXTALT))
+                new ArrayList<>(Arrays.asList(alias.get(BEGIN_ALT), SPACE, EXP, SPACE, alias.get(SEP_A), SPACE, NEXTALT))
         )));
         rules.put(NEXTALT, new ArrayList<>(new ArrayList<>(Arrays.asList(
-                new ArrayList<>(Arrays.asList(EXP, alias.get(SEP_A), NEXTALT)),
-                new ArrayList<>(Arrays.asList(EXP, alias.get(END_ALT)))
+                new ArrayList<>(Arrays.asList(EXP, SPACE, alias.get(SEP_A), SPACE, NEXTALT)),
+                new ArrayList<>(Arrays.asList(EXP, SPACE, alias.get(END_ALT)))
         ))));
         rules.put(ITER, new ArrayList<>(Collections.singletonList(
-                new ArrayList<>(Arrays.asList(alias.get(BEGIN_ITER), EXP, alias.get(END_ITER)))
+                new ArrayList<>(Arrays.asList(alias.get(BEGIN_ITER), SPACE, EXP, SPACE, alias.get(END_ITER)))
         )));
         rules.put(CONST, new ArrayList<>(Collections.singletonList(
-                new ArrayList<>(Arrays.asList(alias.get(BEGIN_CONST), EXP, alias.get(END_CONST)))
+                new ArrayList<>(Arrays.asList(alias.get(BEGIN_CONST), SPACE, EXP, SPACE, alias.get(END_CONST)))
         )));
+
+        rules.put(SPACE, new ArrayList<>(new ArrayList<>(Arrays.asList(
+                new ArrayList<>(Collections.singleton(wrapWithSpecialSymbol(WHITESPACE_REGEX))),
+                new ArrayList<>(Collections.singleton(EMPTY_DEFAULT))
+        ))));
+
+        if (mode) {
+            protectTerms(true);
+        }
 
         rules.putAll(generateGrammarFromRegex(new StringBuilder(alias.get(CNAME)), CNAME));
 
         rules.putAll(generateGrammarFromRegex(new StringBuilder(alias.get(NNAME)), NNAME));
+
+        rules.put(STARTING_NONTERM, new ArrayList<>(Arrays.asList(
+                new ArrayList<>(Arrays.asList(RULE, STARTING_NONTERM)),
+                new ArrayList<>(Collections.singletonList(RULE))
+        )));
     }
 
     protected void printRules() {
@@ -129,7 +146,7 @@ public class MetaGrammar extends Reader {
         System.out.println();
     }
 
-    protected void transformCurrentMeta() {
+    protected void transformCurrentMeta(boolean mode) {
         eliminateEpsilonRules();
         for (String nonterm : rules.keySet()) {
             for (List<String> rewritingRule : rules.get(nonterm)) {
@@ -140,30 +157,32 @@ public class MetaGrammar extends Reader {
         }
 
         eliminateChainRules();
-        protectTerms();
+        protectTerms(false);
 
-        Tokenizer tokenizer = new Tokenizer(this);
-        Set<String> notTokens = new HashSet<>();
-        for (String key : alias.keySet()) {
-            if (SYNTAX_TOKENS.contains(key) && !alias.get(key).isEmpty()) {
-                notTokens.add("PROTECTED_" + alias.get(key).substring(1, alias.get(key).length() - 1));
-            }
-        }
-        notTokens.removeAll(tokenizer.getTokens());
-        if (!notTokens.isEmpty()) {
-            System.out.print("WARNING: following syntax elements are not tokens : ");
-            for (String protectedElem : notTokens) {
-                for (String key : alias.keySet()) {
-                    String value = alias.get(key);
-                    if (!value.isEmpty() && protectedElem.equals("PROTECTED_" + value.substring(1, value.length() - 1))) {
-                        System.out.print(key + ", ");
-                    }
+        if (!mode) {
+            Tokenizer tokenizer = new Tokenizer(this);
+            Set<String> notTokens = new HashSet<>();
+            for (String key : alias.keySet()) {
+                if (SYNTAX_TOKENS.contains(key) && !alias.get(key).isEmpty()) {
+                    notTokens.add("PROTECTED_" + alias.get(key).substring(1, alias.get(key).length() - 1));
                 }
             }
-            System.out.println();
+            notTokens.removeAll(tokenizer.getTokens());
+            if (!notTokens.isEmpty()) {
+                System.out.print("WARNING: following syntax elements are not tokens : ");
+                for (String protectedElem : notTokens) {
+                    for (String key : alias.keySet()) {
+                        String value = alias.get(key);
+                        if (!value.isEmpty() && protectedElem.equals("PROTECTED_" + value.substring(1, value.length() - 1))) {
+                            System.out.print(key + ", ");
+                        }
+                    }
+                }
+                System.out.println();
+            }
+        } else {
+            convertGrammarToCNF();
         }
-
-        convertGrammarToCNF();
     }
 
     private void convertGrammarToCNF() {
@@ -188,31 +207,48 @@ public class MetaGrammar extends Reader {
         }
     }
 
-    private void protectTerms() {
+    private void protectTerms(boolean mode) {
         Map<String, String> protectedTerms = new HashMap<>();
         for (String nonterm : rules.keySet()) {
-                for (List<String> rewritingRule : rules.get(nonterm)) {
-                    if (rewritingRule.size() > 1) {
-                        for (int i = 0; i < rewritingRule.size(); i++) {
-                            String term = rewritingRule.get(i);
-                            if (isTerm(term)) {
-                                Optional<String> protectingNonterm = Optional.ofNullable(protectedTerms.get(term));
-                                if (protectingNonterm.isPresent()) {
-                                    rewritingRule.set(i, protectingNonterm.get());
-                                } else {
-                                    String newProtectingNonterm = "PROTECTED_" + term.substring(1, term.length() - 1);
-                                    protectedTerms.put(term, newProtectingNonterm);
-                                    rewritingRule.set(i, newProtectingNonterm);
-                                }
+            for (List<String> rewritingRule : rules.get(nonterm)) {
+                if (rewritingRule.size() > 1) {
+                    for (int i = 0; i < rewritingRule.size(); i++) {
+                        String term = rewritingRule.get(i);
+                        if (isTerm(term)) {
+                            Optional<String> protectingNonterm = Optional.ofNullable(protectedTerms.get(term));
+                            if (protectingNonterm.isPresent()) {
+                                rewritingRule.set(i, protectingNonterm.get());
+                            } else {
+                                String newProtectingNonterm = "PROTECTED_" + term.substring(1, term.length() - 1);
+                                protectedTerms.put(term, newProtectingNonterm);
+                                rewritingRule.set(i, newProtectingNonterm);
                             }
                         }
                     }
                 }
+            }
         }
         for (String protectedTerm : protectedTerms.keySet()) {
             String newProtectingNonterm = protectedTerms.get(protectedTerm);
             List<List<String>> newRewritingRule = new ArrayList<>();
-            newRewritingRule.add(new ArrayList<>(Collections.singleton(protectedTerm)));
+            if (mode) {
+                List<String> rewrite = new ArrayList<>();
+                if (protectedTerm.length() > 1) {
+                    for (int i = 1; i < protectedTerm.length() - 1; i++) {
+                        String nonterm = "PROTECTED_" + protectedTerm.charAt(i);
+                        if (!rules.containsKey(nonterm)) {
+                            rules.put(nonterm, new ArrayList<>());
+                            rules.get(nonterm).add(new ArrayList<>(Collections.singletonList(wrapWithSpecialSymbol(String.valueOf(protectedTerm.charAt(i))))));
+                        }
+                        rewrite.add(nonterm);
+                    }
+                } else {
+                    rewrite.add(protectedTerm);
+                }
+                newRewritingRule.add(rewrite);
+            } else {
+                newRewritingRule.add(new ArrayList<>(Collections.singleton(protectedTerm)));
+            }
             rules.put(newProtectingNonterm, newRewritingRule);
         }
     }
