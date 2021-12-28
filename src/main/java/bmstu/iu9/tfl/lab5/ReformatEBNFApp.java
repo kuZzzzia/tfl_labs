@@ -8,15 +8,11 @@ public class ReformatEBNFApp {
             System.exit(-1);
         }
         try {
-            System.out.println("Current:");
             MetaGrammar currentSyntax = new MetaGrammar(args[0]);
-
             currentSyntax.transformCurrentMeta();
 
-            System.out.println("New:");
             MetaGrammar newSyntax = new MetaGrammar(args[1]);
 
-            //TODO: check if delimiters are tokens (lab4) ONLY WARNING!!!
             //TODO: use ACT or CYK
             //TODO: parse trees -> new syntax
             // if there is a conflict in converting CNAME or NNAME then throw an error

@@ -82,10 +82,11 @@ public class MetaGrammar extends Reader {
     ));
 
     private final Map<String, List<List<String>>> rules;
+    private final Map<String, String> alias;
 
     public MetaGrammar(String path) throws IOException {
         super(path);
-        Map<String, String> alias = getSyntaxDefinition();
+        alias = getSyntaxDefinition();
 
         rules = new HashMap<>();
         rules.put(RULE, new ArrayList<>(Collections.singletonList(
@@ -119,8 +120,6 @@ public class MetaGrammar extends Reader {
         rules.putAll(generateGrammarFromRegex(new StringBuilder(alias.get(CNAME)), CNAME));
 
         rules.putAll(generateGrammarFromRegex(new StringBuilder(alias.get(NNAME)), NNAME));
-
-        printRules();
     }
 
     protected void printRules() {
@@ -139,16 +138,32 @@ public class MetaGrammar extends Reader {
                 }
             }
         }
-        Tokenizer tokenizer = new Tokenizer(this);
-        Set<String> notTokens = new HashSet<>(SYNTAX_TOKENS);
-        notTokens.retainAll(tokenizer.getTokens());
-        if (!notTokens.isEmpty()) {
-            System.out.println("WARNING: following syntax elements are not tokens : " + notTokens);
-        }
+
         eliminateChainRules();
         protectTerms();
+
+        Tokenizer tokenizer = new Tokenizer(this);
+        Set<String> notTokens = new HashSet<>();
+        for (String key : alias.keySet()) {
+            if (SYNTAX_TOKENS.contains(key) && !alias.get(key).isEmpty()) {
+                notTokens.add("PROTECTED_" + alias.get(key).substring(1, alias.get(key).length() - 1));
+            }
+        }
+        notTokens.removeAll(tokenizer.getTokens());
+        if (!notTokens.isEmpty()) {
+            System.out.print("WARNING: following syntax elements are not tokens : ");
+            for (String protectedElem : notTokens) {
+                for (String key : alias.keySet()) {
+                    String value = alias.get(key);
+                    if (!value.isEmpty() && protectedElem.equals("PROTECTED_" + value.substring(1, value.length() - 1))) {
+                        System.out.print(key + ", ");
+                    }
+                }
+            }
+            System.out.println();
+        }
+
         convertGrammarToCNF();
-        printRules();
     }
 
     private void convertGrammarToCNF() {
@@ -202,7 +217,7 @@ public class MetaGrammar extends Reader {
         }
     }
 
-    private static boolean isTerm(String candidate) {
+    public static boolean isTerm(String candidate) {
         return (candidate.length() > 2 && candidate.startsWith(SPECIAL_SYMBOL) && candidate.endsWith(SPECIAL_SYMBOL));
     }
 
