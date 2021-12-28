@@ -1,11 +1,10 @@
 package bmstu.iu9.tfl.lab5;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class TreeBuilder extends Reader {
+    private static final String INPUT_GRAMMAR_ERROR = "Input grammar can not be parsed with current syntax";
 
     private static final int TERMINAL_RULE_LENGTH = 1;
 
@@ -18,14 +17,25 @@ public class TreeBuilder extends Reader {
         this.currentSyntax = currentSyntax.getRules();
         this.newSyntax = newSyntax.getRules();
         grammar = String.join("\n", getData());
-        AlgoCYK();
+        List<TreeNode> parsingTrees = AlgoCYK();
+        System.out.println("CYK parsing ended");
+        if (parsingTrees.isEmpty()) {
+            throw new Error(INPUT_GRAMMAR_ERROR);
+        }
+        List<String> newGrammars = new ArrayList<>();
+        String newNNameRegex = newSyntax.getNNameRegex();
+        String newCNameRegex = newSyntax.getCNameRegex();
+        for (TreeNode tree : parsingTrees) {
+            tree.foldTree(newNNameRegex, newCNameRegex);
+
+        }
     }
 
     private static String unwrapTerm(String s) {
         return s.substring(1, s.length() - 1);
     }
 
-    private void AlgoCYK() {
+    private List<TreeNode> AlgoCYK() {
         List<List<List<TreeNode>>> tableCYK = initializeTableCYK();
 
         for (int i = 0; i < grammar.length(); i++) {
@@ -62,11 +72,13 @@ public class TreeBuilder extends Reader {
                 }
             }
         }
+        List<TreeNode> parsingTrees = new ArrayList<>();
         for (TreeNode s : tableCYK.get(0).get(grammar.length() - 1)) {
             if (s.getNonterm().equals(MetaGrammar.NEW_STARTING_NONTERM)) {
-                System.out.println("YES");
+                parsingTrees.add(s);
             }
         }
+        return parsingTrees;
     }
 
     private static List<TreeNode> checkListContainsNonterm(List<TreeNode> list, String nonterm) {

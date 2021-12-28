@@ -14,19 +14,15 @@ public class ReformatEBNFApp {
             MetaGrammar currentSyntaxWithoutProtectionOfTerms = new MetaGrammar(args[0], false);
             currentSyntaxWithoutProtectionOfTerms.transformCurrentMeta(false);
 
-//            System.out.println("\nCurrent:");
-//            currentSyntax.printRules();
-
-//            System.out.println("\nNew:");
             MetaGrammar newSyntax = new MetaGrammar(args[1], false);
-//            newSyntax.printRules();
 
             TreeBuilder treeBuilder = new TreeBuilder(args[2], currentSyntax, newSyntax);
 
-            //TODO: use ACT or CYK
-            //TODO: parse trees -> new syntax
-            // if there is a conflict in converting CNAME or NNAME then throw an error
-            // else print grammar in new syntax (all variants)
+            //TODO: list of variants of the grammar in new syntax
+            // going by each node substituting core nonterms
+            // get new grammar
+            // print unique strings
+
         } catch (Exception e) {
             e.printStackTrace();
         }

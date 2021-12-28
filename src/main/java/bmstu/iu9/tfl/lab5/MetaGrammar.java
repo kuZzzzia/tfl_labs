@@ -12,7 +12,7 @@ public class MetaGrammar extends Reader {
     private static final String SYNTAX_DEFINITION_ERROR = "Error in defining syntax: ";
     private static final String NO_CNAME_OR_NNAME_DEFINITION_ERROR = "No NNAME or CNAME definition found";
 
-    private static final String RULE = "RULE";
+    protected static final String RULE = "RULE";
     private static final String EXP = "EXP";
     private static final String NTERM = "NTERM";
     private static final String ALT = "ALT";
@@ -33,8 +33,8 @@ public class MetaGrammar extends Reader {
     private static final String END_ITER = "END_ITER";
     private static final String BEGIN_CONST = "BEGIN_CONST";
     private static final String END_CONST = "END_CONST";
-    private static final String NNAME = "NNAME";
-    private static final String CNAME = "CNAME";
+    protected static final String NNAME = "NNAME";
+    protected static final String CNAME = "CNAME";
     private static final String SPACE = "SPACE";
 
     private static final String EMPTY_DEFAULT = "";
@@ -48,6 +48,7 @@ public class MetaGrammar extends Reader {
     private static final String SMALL_LETTER_REGEX = "[a-z]";
     private static final String DIGIT_REGEX = "[0-9]";
     private static final String NOT_WHITESPACE_SYMBOL_REGEX = ".";
+    private static final String DOT_SYMBOL = "\\.";
     private static final String WHITESPACE_SYMBOL_REGEX = "!blank!";
     private static final String SYMBOL_REGEX = "[^\\[\\].!\\s]";
     private static final String WHITESPACE_REGEX = "\\s";
@@ -65,7 +66,7 @@ public class MetaGrammar extends Reader {
     private static final int EMPTY_STRING_LENGTH = 0;
     private static final int POSITION_OF_SYMBOL_TO_PARSE = 0;
 
-    private static final String STARTING_NONTERM = "[S]";
+    protected static final String STARTING_NONTERM = "[S]";
     protected static final String NEW_STARTING_NONTERM = "[S0]";
 
     private static final Set<String> SYNTAX_TOKENS = new HashSet<>(Arrays.asList(
@@ -523,6 +524,14 @@ public class MetaGrammar extends Reader {
 
     public Map<String, List<List<String>>> getRules() {
         return rules;
+    }
+
+    public String getCNameRegex() {
+        return alias.get(CNAME).replaceAll(DOT_SYMBOL, NOT_WHITESPACE_REGEX).replaceAll(WHITESPACE_SYMBOL_REGEX, WHITESPACE_REGEX);
+    }
+
+    public String getNNameRegex() {
+        return alias.get(NNAME).replaceAll(DOT_SYMBOL, NOT_WHITESPACE_REGEX).replaceAll(WHITESPACE_SYMBOL_REGEX, WHITESPACE_REGEX);
     }
 
 }
