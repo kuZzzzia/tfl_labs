@@ -13,29 +13,29 @@ public class MetaGrammar extends Reader {
     private static final String NO_CNAME_OR_NNAME_DEFINITION_ERROR = "No NNAME or CNAME definition found";
 
     protected static final String RULE = "RULE";
-    private static final String EXP = "EXP";
-    private static final String NTERM = "NTERM";
-    private static final String ALT = "ALT";
-    private static final String NEXTALT = "NEXTALT";
-    private static final String ITER = "ITER";
-    private static final String CONST = "CONST";
-    private static final String BEGIN_RULE = "BEGIN_RULE";
-    private static final String SEP_R = "SEP_R";
-    private static final String END_RULE = "END_RULE";
-    private static final String LPAREN = "LPAREN";
-    private static final String RPAREN = "RPAREN";
-    private static final String BEGIN_NTERM = "BEGIN_NTERM";
-    private static final String END_NTERM = "END_NTERM";
-    private static final String BEGIN_ALT = "BEGIN_ALT";
-    private static final String SEP_A = "SEP_A";
-    private static final String END_ALT = "END_ALT";
-    private static final String BEGIN_ITER = "BEGIN_ITER";
-    private static final String END_ITER = "END_ITER";
-    private static final String BEGIN_CONST = "BEGIN_CONST";
-    private static final String END_CONST = "END_CONST";
+    protected static final String EXP = "EXP";
+    protected static final String NTERM = "NTERM";
+    protected static final String ALT = "ALT";
+    protected static final String NEXTALT = "NEXTALT";
+    protected static final String ITER = "ITER";
+    protected static final String CONST = "CONST";
+    protected static final String BEGIN_RULE = "BEGIN_RULE";
+    protected static final String SEP_R = "SEP_R";
+    protected static final String END_RULE = "END_RULE";
+    protected static final String LPAREN = "LPAREN";
+    protected static final String RPAREN = "RPAREN";
+    protected static final String BEGIN_NTERM = "BEGIN_NTERM";
+    protected static final String END_NTERM = "END_NTERM";
+    protected static final String BEGIN_ALT = "BEGIN_ALT";
+    protected static final String SEP_A = "SEP_A";
+    protected static final String END_ALT = "END_ALT";
+    protected static final String BEGIN_ITER = "BEGIN_ITER";
+    protected static final String END_ITER = "END_ITER";
+    protected static final String BEGIN_CONST = "BEGIN_CONST";
+    protected static final String END_CONST = "END_CONST";
     protected static final String NNAME = "NNAME";
     protected static final String CNAME = "CNAME";
-    private static final String SPACE = "SPACE";
+    protected static final String SPACE = "SPACE";
 
     private static final String EMPTY_DEFAULT = "";
     private static final String LPAREN_DEFAULT = "$($";
@@ -69,7 +69,7 @@ public class MetaGrammar extends Reader {
     protected static final String STARTING_NONTERM = "[S]";
     protected static final String NEW_STARTING_NONTERM = "[S0]";
 
-    private static final Set<String> SYNTAX_TOKENS = new HashSet<>(Arrays.asList(
+    protected static final Set<String> SYNTAX_TOKENS = new HashSet<>(Arrays.asList(
             BEGIN_RULE,
             SEP_R,
             END_RULE,
@@ -91,9 +91,9 @@ public class MetaGrammar extends Reader {
 
     public MetaGrammar(String path, boolean mode) throws IOException {
         super(path);
-        alias = getSyntaxDefinition();
-
         rules = new HashMap<>();
+
+        alias = getSyntaxDefinition(mode);
 
         rules.put(RULE, new ArrayList<>(Collections.singletonList(
                 new ArrayList<>(Arrays.asList(SPACE, alias.get(BEGIN_RULE), NTERM, alias.get(SEP_R), EXP, alias.get(END_RULE), SPACE))
@@ -129,10 +129,6 @@ public class MetaGrammar extends Reader {
                 new ArrayList<>(Collections.singleton(EMPTY_DEFAULT))
         ))));
 
-        if (mode) {
-            protectTerms(true);
-        }
-
         rules.putAll(generateGrammarFromRegex(new StringBuilder(alias.get(CNAME)), CNAME));
 
         rules.putAll(generateGrammarFromRegex(new StringBuilder(alias.get(NNAME)), NNAME));
@@ -143,14 +139,27 @@ public class MetaGrammar extends Reader {
         )));
     }
 
-    protected void printRules() {
-        for (String key : rules.keySet()) {
-            System.out.println(key + ":" + rules.get(key));
+    protected void unwrapAlias() {
+        for (String key : alias.keySet()) {
+            String value = alias.get(key);
+            if (!value.isEmpty() && !key.equals(CNAME) && ! key.equals(NNAME)) {
+                alias.replace(key, value.substring(1, value.length() - 1));
+            }
         }
-        System.out.println();
     }
 
     protected void transformCurrentMeta(boolean mode) {
+        if (!mode) {
+            for (String nonterm : rules.keySet()) {
+                if (!nonterm.startsWith(CNAME) && !nonterm.startsWith(NNAME)) {
+                    for (List<String> rewritingRule : rules.get(nonterm)) {
+                        rewritingRule.removeIf(s -> s.equals(SPACE));
+                    }
+                }
+            }
+            rules.remove(SPACE);
+        }
+
         eliminateEpsilonRules();
         for (String nonterm : rules.keySet()) {
             for (List<String> rewritingRule : rules.get(nonterm)) {
@@ -161,10 +170,10 @@ public class MetaGrammar extends Reader {
         }
 
         rules.put(NEW_STARTING_NONTERM, new ArrayList<>());
-        rules.get(NEW_STARTING_NONTERM).add(new ArrayList<>(Collections.singleton(STARTING_NONTERM)));
+        rules.get(NEW_STARTING_NONTERM).add(new ArrayList<>(Collections.singletonList(STARTING_NONTERM)));
 
         eliminateChainRules();
-        protectTerms(false);
+        protectTerms();
 
         if (!mode) {
             Tokenizer tokenizer = new Tokenizer(this);
@@ -214,7 +223,7 @@ public class MetaGrammar extends Reader {
         }
     }
 
-    private void protectTerms(boolean mode) {
+    private void protectTerms() {
         Map<String, String> protectedTerms = new HashMap<>();
         for (String nonterm : rules.keySet()) {
             for (List<String> rewritingRule : rules.get(nonterm)) {
@@ -236,27 +245,9 @@ public class MetaGrammar extends Reader {
             }
         }
         for (String protectedTerm : protectedTerms.keySet()) {
-            String unwrappedTerm = protectedTerm.substring(1, protectedTerm.length() - 1);
             String newProtectingNonterm = protectedTerms.get(protectedTerm);
             List<List<String>> newRewritingRule = new ArrayList<>();
-            if (mode) {
-                List<String> rewrite = new ArrayList<>();
-                if (unwrappedTerm.length() > 1) {
-                    for (int i = 0; i < unwrappedTerm.length(); i++) {
-                        String nonterm = "PROTECTED_" + unwrappedTerm.charAt(i);
-                        if (!rules.containsKey(nonterm)) {
-                            rules.put(nonterm, new ArrayList<>());
-                            rules.get(nonterm).add(new ArrayList<>(Collections.singletonList(wrapWithSpecialSymbol(String.valueOf(unwrappedTerm.charAt(i))))));
-                        }
-                        rewrite.add(nonterm);
-                    }
-                } else {
-                    rewrite.add(protectedTerm);
-                }
-                newRewritingRule.add(rewrite);
-            } else {
-                newRewritingRule.add(new ArrayList<>(Collections.singleton(protectedTerm)));
-            }
+            newRewritingRule.add(new ArrayList<>(Collections.singleton(protectedTerm)));
             rules.put(newProtectingNonterm, newRewritingRule);
         }
     }
@@ -485,7 +476,7 @@ public class MetaGrammar extends Reader {
         return SPECIAL_SYMBOL + s + SPECIAL_SYMBOL;
     }
 
-    private Map<String, String> getSyntaxDefinition() {
+    private Map<String, String> getSyntaxDefinition(boolean mode) {
         Map<String, String> alias = new HashMap<>();
         alias.put(BEGIN_RULE, EMPTY_DEFAULT);
         alias.put(END_RULE, EMPTY_DEFAULT);
@@ -519,6 +510,38 @@ public class MetaGrammar extends Reader {
         if (!(alias.containsKey(NNAME) && alias.containsKey(CNAME))) {
             throw new Error(NO_CNAME_OR_NNAME_DEFINITION_ERROR);
         }
+        if (mode) {
+            for (String key : alias.keySet()) {
+                if (SYNTAX_TOKENS.contains(key)) {
+                    String protectedTerm = alias.get(key);
+                    if (!protectedTerm.isEmpty()) {
+                        List<List<String>> newRewritingRule = new ArrayList<>();
+
+                        String unwrappedTerm = protectedTerm.substring(1, protectedTerm.length() - 1);
+                        List<String> rewrite = new ArrayList<>();
+                        if (unwrappedTerm.length() > 1) {
+                            for (int i = 0; i < unwrappedTerm.length(); i++) {
+                                String nonterm = "PROTECTED_" + unwrappedTerm.charAt(i);
+                                if (!rules.containsKey(nonterm)) {
+                                    rules.put(nonterm, new ArrayList<>());
+                                    rules.get(nonterm).add(new ArrayList<>(
+                                            Collections.singletonList(
+                                                    wrapWithSpecialSymbol(String.valueOf(unwrappedTerm.charAt(i)))
+                                            )
+                                    ));
+                                }
+                                rewrite.add(nonterm);
+                            }
+                        } else {
+                            rewrite.add(protectedTerm);
+                        }
+                        newRewritingRule.add(rewrite);
+                        rules.put(key, newRewritingRule);
+                        alias.put(key, key);
+                    }
+                }
+            }
+        }
         return alias;
     }
 
@@ -526,8 +549,12 @@ public class MetaGrammar extends Reader {
         return rules;
     }
 
+    public Map<String, String> getAlias() {
+        return alias;
+    }
+
     public String getCNameRegex() {
-        return alias.get(CNAME).replaceAll(DOT_SYMBOL, NOT_WHITESPACE_REGEX).replaceAll(WHITESPACE_SYMBOL_REGEX, WHITESPACE_REGEX);
+        return alias.get(CNAME).replaceAll("\\.", "\\\\S").replaceAll(WHITESPACE_SYMBOL_REGEX, WHITESPACE_REGEX);
     }
 
     public String getNNameRegex() {

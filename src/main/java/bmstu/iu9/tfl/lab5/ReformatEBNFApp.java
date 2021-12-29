@@ -15,14 +15,11 @@ public class ReformatEBNFApp {
             currentSyntaxWithoutProtectionOfTerms.transformCurrentMeta(false);
 
             MetaGrammar newSyntax = new MetaGrammar(args[1], false);
+            newSyntax.unwrapAlias();
 
             TreeBuilder treeBuilder = new TreeBuilder(args[2], currentSyntax, newSyntax);
 
-            //TODO: list of variants of the grammar in new syntax
-            // going by each node substituting core nonterms
-            // get new grammar
-            // print unique strings
-
+            treeBuilder.printNewGrammars();
         } catch (Exception e) {
             e.printStackTrace();
         }

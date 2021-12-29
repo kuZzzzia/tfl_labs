@@ -9,25 +9,33 @@ public class TreeBuilder extends Reader {
     private static final int TERMINAL_RULE_LENGTH = 1;
 
     private final Map<String, List<List<String>>> currentSyntax;
-    private final Map<String, List<List<String>>> newSyntax;
     private final String grammar;
+
+    private final List<String> newGrammars;
 
     public TreeBuilder(String path, MetaGrammar currentSyntax, MetaGrammar newSyntax) throws IOException {
         super(path);
         this.currentSyntax = currentSyntax.getRules();
-        this.newSyntax = newSyntax.getRules();
+
         grammar = String.join("\n", getData());
         List<TreeNode> parsingTrees = AlgoCYK();
         System.out.println("CYK parsing ended");
         if (parsingTrees.isEmpty()) {
             throw new Error(INPUT_GRAMMAR_ERROR);
         }
-        List<String> newGrammars = new ArrayList<>();
+        newGrammars = new ArrayList<>();
         String newNNameRegex = newSyntax.getNNameRegex();
         String newCNameRegex = newSyntax.getCNameRegex();
-        for (TreeNode tree : parsingTrees) {
-            tree.foldTree(newNNameRegex, newCNameRegex);
-
+        for (int i = 0; i < parsingTrees.size(); i++) {
+            parsingTrees.get(i).foldTree(newNNameRegex, newCNameRegex);
+            if (!parsingTrees.get(i).applyNewSyntax(newSyntax.getAlias())) {
+                parsingTrees.remove(i--);
+            } else {
+                String newGrammar = parsingTrees.get(i).print();
+                if (!newGrammars.contains(newGrammar)) {
+                    newGrammars.add(newGrammar);
+                }
+            }
         }
     }
 
@@ -102,5 +110,11 @@ public class TreeBuilder extends Reader {
             }
         }
         return tableCYK;
+    }
+
+    public void printNewGrammars() {
+        for (String g : newGrammars) {
+            System.out.println(g);
+        }
     }
 }
