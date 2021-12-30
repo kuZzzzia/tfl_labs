@@ -104,7 +104,7 @@ public class TreeNode {
                                 path.remove(i--);
                                 break;
                             case MetaGrammar.NNAME:
-                                path.add(i++, new TreeNode(MetaGrammar.BEGIN_NTERM, newSyntax.get(MetaGrammar.END_NTERM)));
+                                path.add(i++, new TreeNode(MetaGrammar.BEGIN_NTERM, newSyntax.get(MetaGrammar.BEGIN_NTERM)));
                                 path.add(++i, new TreeNode(MetaGrammar.END_NTERM, newSyntax.get(MetaGrammar.END_NTERM)));
                                 break;
                         }
