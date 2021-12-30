@@ -27,6 +27,10 @@ public class TreeNode {
         SYNTAX.addAll(MetaGrammar.SYNTAX_TOKENS);
     }
 
+    private static final String ANSI_RESET = "\u001B[0m";
+    public static final String ANSI_YELLOW = "\u001B[33m";
+    public static final String ANSI_PURPLE = "\u001B[35m";
+
     private NodeType type;
     private String nonterm;
     private String term;
@@ -107,6 +111,9 @@ public class TreeNode {
                     }
                     break;
                 case MetaGrammar.ALT:
+                    if (!sepAlt(path)) {
+                        return false;
+                    }
                     for (int i = 0; i < path.size(); i++) {
                         TreeNode node = path.get(i);
                         switch (node.nonterm) {
@@ -130,6 +137,7 @@ public class TreeNode {
                     }
                     break;
                 case MetaGrammar.NEXTALT:
+
                     boolean next = false;
                     for (TreeNode node : path) {
                         if (node.nonterm.equals(MetaGrammar.NEXTALT)) {
@@ -138,6 +146,9 @@ public class TreeNode {
                         }
                     }
                     if (next) {
+                        if (!sepAlt(path)) {
+                            return false;
+                        }
                         for (int i = 0; i < path.size(); i++) {
                             TreeNode node = path.get(i);
                             switch (node.nonterm) {
@@ -148,8 +159,6 @@ public class TreeNode {
                                     if (node.expIsEmpty(node) || !node.applyNewSyntax(newSyntax)) {
                                         return false;
                                     }
-                                    path.add(i++, new TreeNode(MetaGrammar.BEGIN_ALT, newSyntax.get(MetaGrammar.BEGIN_ALT)));
-                                    path.add(++i, new TreeNode(MetaGrammar.SEP_A, newSyntax.get(MetaGrammar.SEP_A)));
                                     break;
                                 case MetaGrammar.NEXTALT:
                                     if (!node.applyNewSyntax(newSyntax)) {
@@ -160,6 +169,7 @@ public class TreeNode {
                             }
                         }
                     } else {
+
                         boolean expExists = false;
                         for (TreeNode node : path) {
                             if (node.nonterm.equals(MetaGrammar.EXP)) {
@@ -189,10 +199,11 @@ public class TreeNode {
                                     if (node.expIsEmpty(node) || !node.applyNewSyntax(newSyntax)) {
                                         return false;
                                     }
-                                    path.add(++i, new TreeNode(MetaGrammar.END_ALT, newSyntax.get(MetaGrammar.END_ALT)));
+
                                     break;
                             }
                         }
+                        path.add(new TreeNode(MetaGrammar.END_ALT, newSyntax.get(MetaGrammar.END_ALT)));
                     }
                     break;
                 case MetaGrammar.ITER:
@@ -237,15 +248,13 @@ public class TreeNode {
                                 lparenAppeared = true;
                                 node.term = newSyntax.get(MetaGrammar.LPAREN);
                                 int j = i + 1;
-                                while (j < path.size() && !path.get(j).nonterm.equals(MetaGrammar.RPAREN)) {
+                                if (!path.get(j).nonterm.equals(MetaGrammar.EXP)) {
+                                    return false;
+                                } else {
                                     j++;
-                                }
-                                if (j == path.size()) {
-                                    j = i + 1;
-                                    while (j < path.size() && !path.get(j).nonterm.equals(MetaGrammar.EXP)) {
-                                        j++;
-                                    }
-                                    if (j == path.size()) {
+                                    if (j != path.size() && path.get(j).nonterm.equals(MetaGrammar.RPAREN)) {
+                                        path.get(j).term = newSyntax.get(MetaGrammar.RPAREN);
+                                    } else if (j == path.size()){
                                         path.add(new TreeNode(MetaGrammar.RPAREN, newSyntax.get(MetaGrammar.RPAREN)));
                                     } else {
                                         path.add(++j, new TreeNode(MetaGrammar.RPAREN, newSyntax.get(MetaGrammar.RPAREN)));
@@ -257,13 +266,10 @@ public class TreeNode {
                                 node.term = newSyntax.get(MetaGrammar.RPAREN);
                                 if (!lparenAppeared) {
                                     int j = i - 1;
-                                    while (j > -1 && !path.get(j).nonterm.equals(MetaGrammar.EXP)) {
-                                        j--;
-                                    }
-                                    if (j == -1) {
-                                        path.add(0, new TreeNode(MetaGrammar.LPAREN, newSyntax.get(MetaGrammar.LPAREN)));
-                                    } else {
+                                    if (j > -1 && path.get(j).nonterm.equals(MetaGrammar.EXP)) {
                                         path.add(j, new TreeNode(MetaGrammar.LPAREN, newSyntax.get(MetaGrammar.LPAREN)));
+                                    } else {
+                                        return false;
                                     }
                                     i++;
                                 }
@@ -282,14 +288,19 @@ public class TreeNode {
                             }
                             case MetaGrammar.NEXTALT: {
                                 List<TreeNode> newNode = new ArrayList<>();
+                                int j = i;
+                                while (j > -1 && !path.get(j).nonterm.equals(MetaGrammar.EXP)){
+                                    j--;
+                                };
+                                if (j < 0 ) {
+                                    return false;
+                                }
                                 newNode.add(new TreeNode(MetaGrammar.BEGIN_ALT, newSyntax.get(MetaGrammar.BEGIN_ALT)));
-                                int j = findPrev(i - 1, path, MetaGrammar.EXP);
                                 newNode.add(path.get(j));
                                 newNode.add(new TreeNode(MetaGrammar.SEP_A, newSyntax.get(MetaGrammar.SEP_A)));
                                 newNode.add(path.get(i));
-                                j = findPrev(j - 1, path, MetaGrammar.BEGIN_ALT);
-                                path.subList(j + 1, i + 1).clear();
-                                i = i + 1;
+                                path.subList(j, i + 1).clear();
+                                i = j;
                                 path.add(i, new TreeNode(MetaGrammar.ALT, newNode));
                                 break;
                             }
@@ -342,6 +353,28 @@ public class TreeNode {
                     break;
             }
 
+        }
+        return true;
+    }
+
+    private static boolean sepAlt(List<TreeNode> path) {
+        int prevSepA = 0;
+        for (int i = 0; i < path.size(); i++) {
+            TreeNode node = path.get(i);
+            if (node.nonterm.equals(MetaGrammar.SEP_A)) {
+                if (i - prevSepA > 2 || (i == 1 && prevSepA == 0 && !path.get(prevSepA).nonterm.equals(MetaGrammar.BEGIN_ALT))) {
+                    List<TreeNode> newNode = new ArrayList<>();
+                    for (int k = prevSepA; k < i; k++) {
+                        newNode.add(path.get(k));
+                    }
+                    path.subList(prevSepA + 1, i).clear();
+                    i = prevSepA + 1;
+                    path.add(i++, new TreeNode(MetaGrammar.EXP, newNode));
+                    prevSepA = i;
+                } else if (i - prevSepA < 2) {
+                    return false;
+                }
+            }
         }
         return true;
     }
@@ -417,12 +450,21 @@ public class TreeNode {
     }
 
     public String print() {
-        if (type == NodeType.TERMINAL) {
-            return term;
-        }
         StringBuilder s = new StringBuilder();
-        for (TreeNode node : path) {
-            s.append(node.print());
+        if (nonterm.equals(MetaGrammar.CNAME)) {
+            s.append(ANSI_YELLOW);
+        } else if (nonterm.equals(MetaGrammar.NNAME)) {
+            s.append(ANSI_PURPLE);
+        }
+        if (type == NodeType.TERMINAL) {
+            s.append(term);
+        } else {
+            for (TreeNode node : path) {
+                s.append(node.print());
+            }
+        }
+        if (nonterm.equals(MetaGrammar.CNAME) || nonterm.equals(MetaGrammar.NNAME)) {
+            s.append(ANSI_RESET);
         }
         return s.toString();
     }
