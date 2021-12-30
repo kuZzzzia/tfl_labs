@@ -160,6 +160,25 @@ public class TreeNode {
                             }
                         }
                     } else {
+                        boolean expExists = false;
+                        for (TreeNode node : path) {
+                            if (node.nonterm.equals(MetaGrammar.EXP)) {
+                                expExists = true;
+                                break;
+                            }
+                        }
+                        if (!expExists) {
+                            int j = path.size();
+                            if (path.get(path.size() - 1).nonterm.equals(MetaGrammar.END_ALT)) {
+                                j--;
+                            }
+                            List<TreeNode> newNode = new ArrayList<>();
+                            for (int i = 0; i < j; i++) {
+                                newNode.add(path.get(i));
+                            }
+                            path.subList(0, j).clear();
+                            path.add(0, new TreeNode(MetaGrammar.EXP, newNode));
+                        }
                         for (int i = 0; i < path.size(); i++) {
                             TreeNode node = path.get(i);
                             switch (node.nonterm) {
@@ -329,16 +348,7 @@ public class TreeNode {
 
     private static int findPrev(int j, List<TreeNode> path, String nonterm) {
         if (j > -1) {
-            if (path.get(j).nonterm.equals(MetaGrammar.SPACE)) {
-                j--;
-                if (j > -1) {
-                    if (path.get(j).nonterm.equals(nonterm)) {
-                        j--;
-                    } else {
-                        j++;
-                    }
-                }
-            } else if (path.get(j).nonterm.equals(nonterm)) {
+            if (path.get(j).nonterm.equals(nonterm)) {
                 j--;
             } else {
                 j++;
@@ -349,16 +359,7 @@ public class TreeNode {
 
     private static int findPost(int k, List<TreeNode> path, String nonterm) {
         if (k < path.size()) {
-            if (path.get(k).nonterm.equals(MetaGrammar.SPACE)) {
-                k++;
-                if (k < path.size()) {
-                    if (path.get(k).nonterm.equals(nonterm)) {
-                        k++;
-                    } else {
-                        k--;
-                    }
-                }
-            } else if (path.get(k).nonterm.equals(nonterm)) {
+            if (path.get(k).nonterm.equals(nonterm)) {
                 k++;
             } else {
                 k--;
@@ -373,34 +374,38 @@ public class TreeNode {
 
     public void foldTree(String newNNameRegex, String newCNameRegex) {
         if (type == NodeType.CNF) {
-            if (nonterm.equals(MetaGrammar.NEW_STARTING_NONTERM) || nonterm.equals(MetaGrammar.STARTING_NONTERM)) {
+            if (nonterm.equals(MetaGrammar.STARTING_NONTERM)) {
                 nonterm = MetaGrammar.RULE;
             }
             path = new ArrayList<>();
+
+            left.foldSubtree(newNNameRegex, newCNameRegex);
+            if (left.type.equals(NodeType.CFG) && !SYNTAX.contains(left.nonterm)) {
+                path.addAll(left.path);
+            } else {
+                path.add(left);
+            }
+
+            right.foldSubtree(newNNameRegex, newCNameRegex);
+            if (right.type.equals(NodeType.CFG) && !SYNTAX.contains(right.nonterm)) {
+                path.addAll(right.path);
+            } else {
+                path.add(right);
+            }
             type = NodeType.CFG;
-            foldSubtree(left, newNNameRegex, newCNameRegex);
-            foldSubtree(right, newNNameRegex, newCNameRegex);
             left = null;
             right = null;
         }
     }
 
-    public void foldSubtree(TreeNode node, String newNNameRegex, String newCNameRegex) {
-        if (node.type == NodeType.CNF) {
-            node.foldTree(newNNameRegex, newCNameRegex);
-            if (node.nonterm.equals(MetaGrammar.CNAME)) {
-                checkConflictsInNameDefinition(node, newCNameRegex);
-            } else if (node.nonterm.equals(MetaGrammar.NNAME)) {
-                checkConflictsInNameDefinition(node, newNNameRegex);
+    public void foldSubtree(String newNNameRegex, String newCNameRegex) {
+        if (type == NodeType.CNF) {
+            foldTree(newNNameRegex, newCNameRegex);
+            if (nonterm.equals(MetaGrammar.CNAME)) {
+                checkConflictsInNameDefinition(this, newCNameRegex);
+            } else if (nonterm.equals(MetaGrammar.NNAME)) {
+                checkConflictsInNameDefinition(this, newNNameRegex);
             }
-
-            if (!SYNTAX.contains(node.nonterm)) {
-                path.addAll(node.path);
-            } else {
-                path.add(node);
-            }
-        } else {
-            path.add(node);
         }
     }
 

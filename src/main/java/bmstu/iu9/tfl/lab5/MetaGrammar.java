@@ -67,7 +67,7 @@ public class MetaGrammar extends Reader {
     private static final int POSITION_OF_SYMBOL_TO_PARSE = 0;
 
     protected static final String STARTING_NONTERM = "[S]";
-    protected static final String NEW_STARTING_NONTERM = "[S0]";
+//    protected static final String NEW_STARTING_NONTERM = "[S0]";
 
     protected static final Set<String> SYNTAX_TOKENS = new HashSet<>(Arrays.asList(
             BEGIN_RULE,
@@ -169,8 +169,8 @@ public class MetaGrammar extends Reader {
             }
         }
 
-        rules.put(NEW_STARTING_NONTERM, new ArrayList<>());
-        rules.get(NEW_STARTING_NONTERM).add(new ArrayList<>(Collections.singletonList(STARTING_NONTERM)));
+//        rules.put(NEW_STARTING_NONTERM, new ArrayList<>());
+//        rules.get(NEW_STARTING_NONTERM).add(new ArrayList<>(Collections.singletonList(STARTING_NONTERM)));
 
         eliminateChainRules();
         protectTerms();

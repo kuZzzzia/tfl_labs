@@ -82,7 +82,7 @@ public class TreeBuilder extends Reader {
         }
         List<TreeNode> parsingTrees = new ArrayList<>();
         for (TreeNode s : tableCYK.get(0).get(grammar.length() - 1)) {
-            if (s.getNonterm().equals(MetaGrammar.NEW_STARTING_NONTERM)) {
+            if (s.getNonterm().equals(MetaGrammar.STARTING_NONTERM)) {
                 parsingTrees.add(s);
             }
         }
