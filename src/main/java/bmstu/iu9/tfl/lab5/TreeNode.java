@@ -353,6 +353,26 @@ public class TreeNode {
                     break;
             }
 
+        } else if (type == NodeType.TERMINAL) {
+            switch (nonterm) {
+                case MetaGrammar.EXP:
+                case MetaGrammar.NTERM: {
+                    type = NodeType.CFG;
+                    path = new ArrayList<>();
+                    path.add(new TreeNode(MetaGrammar.BEGIN_NTERM, newSyntax.get(MetaGrammar.BEGIN_NTERM)));
+                    path.add(new TreeNode(MetaGrammar.NNAME, term));
+                    path.add(new TreeNode(MetaGrammar.END_NTERM, newSyntax.get(MetaGrammar.END_NTERM)));
+                    break;
+                }
+                case MetaGrammar.CONST: {
+                    type = NodeType.CFG;
+                    path = new ArrayList<>();
+                    path.add(new TreeNode(MetaGrammar.BEGIN_CONST, newSyntax.get(MetaGrammar.BEGIN_CONST)));
+                    path.add(new TreeNode(MetaGrammar.CNAME, term));
+                    path.add(new TreeNode(MetaGrammar.END_CONST, newSyntax.get(MetaGrammar.END_CONST)));
+                    break;
+                }
+            }
         }
         return true;
     }
@@ -462,9 +482,12 @@ public class TreeNode {
 
     public String printAns() {
         StringBuilder s = new StringBuilder();
-        if (nonterm.equals(MetaGrammar.CNAME)) {
+        boolean isColored = false;
+        if (nonterm.equals(MetaGrammar.CNAME) || (nonterm.equals(MetaGrammar.CONST) && type == NodeType.TERMINAL)) {
+            isColored = true;
             s.append(ANSI_YELLOW);
-        } else if (nonterm.equals(MetaGrammar.NNAME)) {
+        } else if (nonterm.equals(MetaGrammar.NNAME) || (nonterm.equals(MetaGrammar.NTERM) && type == NodeType.TERMINAL)) {
+            isColored = true;
             s.append(ANSI_PURPLE);
         }
         if (type == NodeType.TERMINAL) {
@@ -474,7 +497,7 @@ public class TreeNode {
                 s.append(node.printAns());
             }
         }
-        if (nonterm.equals(MetaGrammar.CNAME) || nonterm.equals(MetaGrammar.NNAME)) {
+        if (isColored) {
             s.append(ANSI_RESET);
         }
         return s.toString();
