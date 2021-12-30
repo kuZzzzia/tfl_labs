@@ -31,7 +31,7 @@ public class TreeBuilder extends Reader {
             if (!parsingTrees.get(i).applyNewSyntax(newSyntax.getAlias())) {
                 parsingTrees.remove(i--);
             } else {
-                String newGrammar = parsingTrees.get(i).print();
+                String newGrammar = parsingTrees.get(i).printAns();
                 if (!newGrammars.contains(newGrammar)) {
                     newGrammars.add(newGrammar);
                 }

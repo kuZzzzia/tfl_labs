@@ -291,7 +291,7 @@ public class TreeNode {
                                 int j = i;
                                 while (j > -1 && !path.get(j).nonterm.equals(MetaGrammar.EXP)){
                                     j--;
-                                };
+                                }
                                 if (j < 0 ) {
                                     return false;
                                 }
@@ -338,7 +338,7 @@ public class TreeNode {
                                 newNode.add(new TreeNode(MetaGrammar.END_ITER, newSyntax.get(MetaGrammar.END_ITER)));
                                 path.subList(i - 1, i + 1).clear();
                                 i--;
-                                path.add(i, new TreeNode(MetaGrammar.ITER, newNode));;
+                                path.add(i, new TreeNode(MetaGrammar.ITER, newNode));
                                 break;
                             }
                         }
@@ -450,6 +450,17 @@ public class TreeNode {
     }
 
     public String print() {
+        if (type == NodeType.TERMINAL) {
+            return term;
+        }
+        StringBuilder s = new StringBuilder();
+        for (TreeNode node : path) {
+            s.append(node.print());
+        }
+        return s.toString();
+    }
+
+    public String printAns() {
         StringBuilder s = new StringBuilder();
         if (nonterm.equals(MetaGrammar.CNAME)) {
             s.append(ANSI_YELLOW);
@@ -460,7 +471,7 @@ public class TreeNode {
             s.append(term);
         } else {
             for (TreeNode node : path) {
-                s.append(node.print());
+                s.append(node.printAns());
             }
         }
         if (nonterm.equals(MetaGrammar.CNAME) || nonterm.equals(MetaGrammar.NNAME)) {
