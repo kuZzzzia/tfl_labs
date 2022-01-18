@@ -1,5 +1,27 @@
 # tfl_lab_1
 ___
+
+
+## Задания
+1. Унификация линейных термов в сигнатуре TRS
+2. Проверка конфлюэнтности SRS по перекрытию
+
+## Запуск проекта
+Для сборки проекта должен быть установлен Maven и Java не ниже 8 версии
+
+Перед сборкой проекта, если требуются дополнительные файлы, на которых он будет запускаться, нужно добавить их в соответствующую директорию resources:
+* для TRS в ./trs/src/main/resources
+* для SRS в ./srs/src/main/resources
+
+После этого:
+`mvn package`
+
+Пример запуска TRS:
+`java -jar ./trs/target/trs-1.0-SNAPSHOT.jar test1.txt`
+
+Пример запуска SRS:
+`java -jar ./srs/target/srs-1.0-SNAPSHOT.jar test1.txt`
+
 ## Структура проекта
 ```
 .
@@ -56,19 +78,3 @@ ___
                 └── test6.txt
 
 ```
-
-## Запуск проекта
-Для сборки проекта должен быть установлен Maven и Java не ниже 8 версии
-
-Перед сборкой проекта, если требуются дополнительные файлы, на которых он будет запускаться, нужно добавить их в соответствующую директорию resources:
-* для TRS в ./trs/src/main/resources
-* для SRS в ./srs/src/main/resources
-
-После этого:
-`mvn package`
-
-Пример запуска TRS:
-`java -jar ./trs/target/trs-1.0-SNAPSHOT.jar test1.txt`
-
-Пример запуска SRS:
-`java -jar ./srs/target/srs-1.0-SNAPSHOT.jar test1.txt`
