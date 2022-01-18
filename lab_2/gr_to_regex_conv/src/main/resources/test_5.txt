@@ -1,0 +1,6 @@
+S -> aV
+V -> vQ
+Q -> rZ
+Z -> yQ
+Q -> aV
+V -> x
