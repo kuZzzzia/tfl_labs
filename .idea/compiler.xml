@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="tests_generator" />
+        <module name="equiv_regexes" />
+        <module name="system_of_regex_equations" />
+        <module name="parser" />
+        <module name="gr_to_regex_conv" />
+        <module name="reader" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="equiv_regexes" target="8" />
+      <module name="gr_to_regex_conv" target="8" />
+      <module name="grammar_to_regex_convertion" target="8" />
+      <module name="parser" target="8" />
+      <module name="reader" target="8" />
+      <module name="system_of_regex_equations" target="8" />
+      <module name="tests_generator" target="8" />
+      <module name="tfl_lab_2" target="8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>
