@@ -2,7 +2,11 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+<<<<<<< HEAD
       <module fileurl="file://$PROJECT_DIR$/.idea/tfl_lab_4.iml" filepath="$PROJECT_DIR$/.idea/tfl_lab_4.iml" />
+=======
+      <module fileurl="file://$PROJECT_DIR$/.idea/tfl_lab_5.iml" filepath="$PROJECT_DIR$/.idea/tfl_lab_5.iml" />
+>>>>>>> lab_5/main
     </modules>
   </component>
 </project>

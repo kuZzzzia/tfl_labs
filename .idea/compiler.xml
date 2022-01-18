@@ -6,11 +6,19 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+<<<<<<< HEAD
         <module name="tfl_lab_4" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="tfl_lab_4" target="8" />
+=======
+        <module name="tfl_lab_5" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="tfl_lab_5" target="8" />
+>>>>>>> lab_5/main
     </bytecodeTargetLevel>
   </component>
 </project>

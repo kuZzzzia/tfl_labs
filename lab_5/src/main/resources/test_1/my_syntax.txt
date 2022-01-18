@@ -1,0 +1,12 @@
+NNAME = [A-Z]
+CNAME = (.)+
+BEGIN_ALT = [
+END_ALT = ]
+SEP_R = ::=
+END_RULE = ;
+BEGIN_ITER = [
+END_ITER = ]*
+BEGIN_CONST = "
+END_CONST = "
+BEGIN_NTERM = <
+END_NTERM = >
