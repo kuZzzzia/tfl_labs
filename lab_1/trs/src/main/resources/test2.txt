@@ -1,0 +1,6 @@
+constructors = A(0), B(0), C(3), e(1)
+variables = x, y, z
+first = C(A, y, C(x, e(z), B))
+second = C(x, B, C(x, z, B))
+
+
