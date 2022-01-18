@@ -1,0 +1,9 @@
+S -> aP
+P -> bP
+P -> cI
+I -> dI
+I -> bR
+I -> zP
+R -> bR
+R -> o
+R -> zP

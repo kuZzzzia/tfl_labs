@@ -1,0 +1,6 @@
+S -> asdddA
+A -> qweBW
+B -> z
+B -> qq
+W -> wesAT
+T -> qwezwes
