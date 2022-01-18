@@ -23,7 +23,11 @@
 hs_err_pid*
 
 #idea files
-../.idea/
+../lab_2/.idea/
+../lab_3/.idea/
+../lab_4/.idea/
+../lab_5/.idea/
+.idea/
 *.iml
 
 #maven

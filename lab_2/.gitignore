@@ -11,5 +11,9 @@ buildNumber.properties
 .mvn/wrapper/maven-wrapper.jar
 
 #intellij
-.idea
+../lab_1/.idea/
+../lab_3/.idea/
+../lab_4/.idea/
+../lab_5/.idea/
+.idea/
 *.iml

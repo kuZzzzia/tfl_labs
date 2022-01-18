@@ -9,3 +9,9 @@ buildNumber.properties
 .mvn/timing.properties
 # https://github.com/takari/maven-wrapper#usage-without-binary-jar
 .mvn/wrapper/maven-wrapper.jar
+
+../lab_1/.idea/
+../lab_2/.idea/
+../lab_3/.idea/
+../lab_4/.idea/
+.idea/

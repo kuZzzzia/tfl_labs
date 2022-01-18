@@ -10,4 +10,8 @@ buildNumber.properties
 # https://github.com/takari/maven-wrapper#usage-without-binary-jar
 .mvn/wrapper/maven-wrapper.jar
 
+../lab_1/.idea/
+../lab_2/.idea/
+../lab_3/.idea/
+../lab_5/.idea/
 .idea/
